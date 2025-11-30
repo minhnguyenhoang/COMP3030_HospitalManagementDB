@@ -5,3 +5,28 @@
 - Do Quang Thai An
 - Pham Tuan Hung
 - Vu Duc Thanh
+
+## Brief Description
+
+```
+TODO
+```
+
+## Functional & Non-Functional Requirements
+```
+TODO
+```
+
+## Planned Core Entities
+```
+TODO
+```
+
+## Tech Stack
+```
+TODO
+```
+## Projected Timeline
+```
+TODO
+```
