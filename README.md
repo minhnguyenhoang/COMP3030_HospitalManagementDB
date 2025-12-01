@@ -1,10 +1,6 @@
 # Hospital Management Database Program
 Final Project for COMP3030 - Fall Semester 2025, VinUniversity
 
-```
-Description Goes Here
-```
-
 ## Team Members & Roles
 - Nguyen Hoang Minh - V202401599 - Frontend Developer
 - Do Quang Thai An - V202401422 - Manager & Backend Developer
