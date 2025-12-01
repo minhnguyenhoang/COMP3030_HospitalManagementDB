@@ -5,11 +5,11 @@ Final Project for COMP3030 - Fall Semester 2025, VinUniversity
 Description Goes Here
 ```
 
-## Team Members
-- Nguyen Hoang Minh - V202401599
-- Do Quang Thai An - V202401422
-- Pham Tuan Hung
-- Vu Duc Thanh
+## Team Members & Roles
+- Nguyen Hoang Minh - V202401599 - Frontend Developer
+- Do Quang Thai An - V202401422 - Manager & Backend Developer
+- Pham Tuan Hung - V202401414 - Backend Developer
+- Vu Duc Thanh - V20240 - Debugging & Frontend Developper 
 
 ## Brief Description
 
