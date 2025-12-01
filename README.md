@@ -41,13 +41,17 @@ The planned core entities that the databases track are:
 
 ## Tech Stack
 Our Hospital Management System (HMS) will be built using a modern and maintainable full-stack architecture:
+
 **Backend**
 - MySQL: Primary relational database system for storing all hospital data (patients, staff, appointments, procedures, stock).
+
 **Frontend**
 - HTML, CSS, Javascript: our core technologies for creating the user interface.
+
 **Infrastructure / Tools**
 - Github: for version control, collaboration, and documentation for project.
 - MySQL Workbench: modelling database, testing query, and designing schema.
+
 ## Projected Timeline (Tentatively)
 | Phase                           | Dates                  | Key Activities                                       |
 | ------------------------------- | ---------------------- | ---------------------------------------------------- |
