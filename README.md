@@ -17,7 +17,8 @@ TODO
 - Management of administrators, employees, doctors, nurses of a hospital
 - Management of patients in a hospital
 - Data and medical history of patients
-- History of 
+- History of patient appointments/bookings/medical procedures done at the hospital
+- History of usage of medication stock, equipment or rooms
 
 ## Planned Core Entities
 The planned core entities that the databases track are:
@@ -27,6 +28,7 @@ The planned core entities that the databases track are:
 - **Medical Procedures**: history of prescription/recommendation, approval date, head of operation, etc...
 - **Medication & Stock**: stock, usage, history of procurement, history of usage/prescription, etc...
 - **Medical Equipment**: department allocation, usage, date bought, usage history, etc...
+- **Hospital Rooms**: history of usage, department assignment, status, category, etc...
 
 
 ## Tech Stack
