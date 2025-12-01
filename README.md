@@ -40,7 +40,6 @@ The planned core entities that the databases track are:
 TODO
 ```
 ## Projected Timeline
-```
 | Phase                           | Dates                  | Key Activities                                       |
 | ------------------------------- | ---------------------- | ---------------------------------------------------- |
 | 1. Team & Topic Finalization    | By 01/12               | Topic selection, GitHub setup, README, submission    |
@@ -50,4 +49,3 @@ TODO
 | 5. UI/UX + Integration          | 16–19/12               | Frontend, CRUD, analytics, DB integration            |
 | 6. Slides & Documentation       | 17–20/12               | Slides, GitHub cleanup, report                       |
 | 7. Final Rehearsal & Submission | 21/12                  | Testing, rehearsal, submission                       |
-```
