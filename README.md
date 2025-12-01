@@ -13,9 +13,20 @@ Description Goes Here
 
 ## Brief Description
 
-```
-TODO
-```
+Project Title: CarePoint – Hospital Management & Patient History System
+
+### The Problem
+In many healthcare facilities, the traditional method of managing patient records (either paper-based or via fragmented digital files) leads to significant inefficiencies. Key issues include:
+- **Data Redundancy & Inefficiency:** Receptionists and doctors often waste time re-entering demographic information for returning patients, leading to slower check-in processes.
+- **Fragmented Medical History:** A patient’s medical history, allergies, and past treatments are often not immediately accessible during a consultation. This lack of historical context can delay diagnosis or lead to safety risks (e.g., prescribing medication the patient is allergic to).
+- **Lack of Insights:** Without a structured database, hospital administrators struggle to generate accurate statistics regarding patient turnout, disease trends, or revenue, making data-driven decision-making difficult.
+### Brief Description of the System
+The proposed project is a web-based Hospital Management System (HMS) designed exclusively for use by doctors and hospital administrative staff. The system serves as a centralized database to capture, organize, and analyze patient information.
+**Key functionalities include:**
+- **Intelligent Data Entry & Retrieval:** The system distinguishes between new and returning patients. For returning patients, the system automatically retrieves and populates existing demographic data (Name, Age, Gender, etc.) based on unique identifiers (National ID/Phone Number), significantly reducing input time.
+- **Comprehensive Patient Profiles:** Upon looking up a patient, the system presents a dashboard displaying critical medical history, including recent visits, reported symptoms, diagnoses, and known allergies. This ensures doctors have a complete view of the patient's health status immediately.
+- **Data Integrity & Statistics:** All inputs are strictly controlled by authorized staff to ensure data accuracy. The system will also include reporting features to visualize hospital statistics, such as patient volume and common diagnoses, aiding in administrative management.
+
 
 ## Functional & Non-Functional Requirements
 - Management of administrators, employees, doctors, nurses of a hospital
