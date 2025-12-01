@@ -7,7 +7,7 @@ Description Goes Here
 
 ## Team Members
 - Nguyen Hoang Minh - V202401599
-- Do Quang Thai An
+- Do Quang Thai An - V202401422
 - Pham Tuan Hung
 - Vu Duc Thanh
 
@@ -41,5 +41,13 @@ TODO
 ```
 ## Projected Timeline
 ```
-TODO
+| Phase                           | Dates                  | Key Activities                                       |
+| ------------------------------- | ---------------------- | ---------------------------------------------------- |
+| 1. Team & Topic Finalization    | By 01/12               | Topic selection, GitHub setup, README, submission    |
+| 2. Peer Review                  | 08–09/12               | Receive feedback, refine project                     |
+| 3. Design Document              | 10–13/12 (check 14/12) | Requirements, ERD, normalization, DDL, task division |
+| 4. Backend Development          | 13–16/12               | Tables, views, procedures, triggers, indexing        |
+| 5. UI/UX + Integration          | 16–19/12               | Frontend, CRUD, analytics, DB integration            |
+| 6. Slides & Documentation       | 17–20/12               | Slides, GitHub cleanup, report                       |
+| 7. Final Rehearsal & Submission | 21/12                  | Testing, rehearsal, submission                       |
 ```
