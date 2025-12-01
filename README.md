@@ -9,7 +9,7 @@ Description Goes Here
 - Nguyen Hoang Minh - V202401599 - Frontend Developer
 - Do Quang Thai An - V202401422 - Manager & Backend Developer
 - Pham Tuan Hung - V202401414 - Backend Developer
-- Vu Duc Thanh - V20240 - Debugging & Frontend Developper 
+- Vu Duc Thanh - V202401636 - Debugging & Frontend Developper 
 
 ## Brief Description
 
