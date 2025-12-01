@@ -12,9 +12,6 @@ Description Goes Here
 - Vu Duc Thanh - V202401636 - Debugging & Frontend Developper 
 
 ## Brief Description
-
-Project Title: CarePoint – Hospital Management & Patient History System
-
 ### The Problem
 In many healthcare facilities, the traditional method of managing patient records (either paper-based or via fragmented digital files) leads to significant inefficiencies. Key issues include:
 - **Data Redundancy & Inefficiency:** Receptionists and doctors often waste time re-entering demographic information for returning patients, leading to slower check-in processes.
