@@ -39,7 +39,7 @@ The planned core entities that the databases track are:
 ```
 TODO
 ```
-## Projected Timeline
+## Projected Timeline (Tentatively)
 | Phase                           | Dates                  | Key Activities                                       |
 | ------------------------------- | ---------------------- | ---------------------------------------------------- |
 | 1. Team & Topic Finalization    | By 01/12               | Topic selection, GitHub setup, README, submission    |
