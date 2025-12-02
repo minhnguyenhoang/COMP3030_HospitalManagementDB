@@ -1,0 +1,99 @@
+1. Basic Identification & Demographic Information
+
+This includes information for identifying and categorizing the patient:
+
+PatientID (Primary Key)
+
+Full Name (First, Last, Middle)
+
+Date of Birth
+
+Age (calculated from Date of Birth)
+
+Gender (e.g., Male, Female, Non-binary, etc.)
+
+Biological Sex (e.g., Male, Female, etc.)
+
+Blood Type (e.g., A+, B-, O+, AB+, etc.)
+
+Height (in cm or inches)
+
+Weight (in kg or lbs)
+
+Contact Information (e.g., Address, Phone number, Email)
+
+2. Core Medical Information
+
+This includes important medical facts that don’t change over time and help provide insights into the patient’s overall health:
+
+Allergies (Drug, food, environmental, etc.)
+
+Medical Conditions (e.g., chronic conditions like diabetes, asthma, etc.)
+
+Past Surgeries/Procedures (e.g., appendectomy, knee surgery)
+
+Immunization History (e.g., vaccines like flu, MMR, COVID-19)
+
+Genetic Conditions (e.g., sickle cell anemia, cystic fibrosis, etc.)
+
+Family Medical History (e.g., history of heart disease, cancer)
+
+Medications (Current and past medications that the patient is or was taking)
+
+This can be stored in a separate table with a PatientID reference for easy updates.
+
+3. Lifestyle & Social Information
+
+Information that provides context for health decisions and helps with managing treatment plans:
+
+Smoking Status (e.g., Smoker, Non-smoker, Former smoker)
+
+Alcohol Use (e.g., None, Moderate, Heavy)
+
+Drug Use (e.g., Illicit drug use, none)
+
+Dietary Preferences (e.g., Vegetarian, Vegan, Gluten-free)
+
+Physical Activity Level (e.g., Sedentary, Active, Highly active)
+
+Occupation (For context on possible exposures to health risks)
+
+Living Situation (e.g., independent living, assisted living, living alone)
+
+4. Gender-Specific Medical Information
+
+These can vary based on biological sex and are specific to health conditions and treatments related to gender:
+
+Menstrual History (if applicable — age of menarche, menopause status, cycle regularity)
+
+Pregnancy History (number of pregnancies, miscarriages, deliveries)
+
+Prostate Health (for males — history of prostate issues, cancer screenings)
+
+Breast Cancer History (for females — family history, screenings like mammograms)
+
+Gynecological History (for females — history of pap smears, gynecological surgeries)
+
+5. Advanced Care Preferences (Optional, but Important for Critical Care)
+
+This part helps in decision-making for end-of-life care or critical situations:
+
+Do Not Resuscitate (DNR) Orders (if applicable)
+
+Living Will / Advanced Directives (if applicable)
+
+Organ Donation Status (e.g., Yes, No, Unsure)
+
+End-of-Life Care Preferences (e.g., Palliative care, hospice care preferences)
+
+6. Emergency & Contact Information
+
+Essential for emergencies and ensuring communication:
+
+Primary Care Physician (PCP) (Name, contact details)
+
+Emergency Contact(s) (Name, relationship, phone number)
+
+Caregiver Information (Name, relationship, contact details)
+
+Legal Documents (e.g., Power of Attorney for healthcare, legal guardianship)

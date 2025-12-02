@@ -1,5 +1,75 @@
-@startuml a
+@startuml HospitalManagementDB
 class Patient {
+    +PatientID: integer
+    FirstName: varchar
+    MiddleName: varchar
+    LastName: varchar
+    DOB: date
+    Ethnicity: varchar
+    PreferredLanguage: varchar
+    Occupation: varchar
 
+    NatID: varchar
+    PassportNo: varchar
+    DriversLicenseNo: varchar
+    Phone: varchar
+    Email: varchar
+    Address: varchar
+    City: varchar
+    State: varchar
+    Country: varchar
+
+    FirstVisitDate: date
+    LastVisitDate: date
+
+    InsuranceID: varchar
+    InsuranceProvider: varchar
+
+    BloodType: integer
+    Height: integer
+    Weight: integer
+
+    DNRStatus: bit
+    OrganDonorStatus: bit
 }
+
+class PatientCoreMedicalInformation {
+    +PatientID: integer
+    InformationType: integer
+    Note: varchar
+}
+
+class PatientEmergencyContact {
+    +PatientID: integer
+    ContactType: varchar
+    ContactInformation: varchar
+    Relationship: varchar
+    LastUpdated: date
+}
+
+class PatientHistory {
+    +PatientID: integer
+    +DoctorID: integer
+    +AppointmentID: integer
+    VisitDate: date
+    Diagnosis: varchar
+    Category: integer
+    Note: varchar
+}
+
+enum Type_CoreMedInfo {
+    0: Allergies
+    1: Priority/Treatment Status
+    2: Medical Condition
+    3: Genetic Condition
+    4: Substance Use
+    5: Lifestyle Information
+    6: Dietary Information
+    7: Other
+}
+
+Patient -> PatientEmergencyContact
+Patient -> PatientHistory
+Patient -> PatientCoreMedicalInformation
+PatientCoreMedicalInformation -> Type_CoreMedInfo
 @enduml
