@@ -1,0 +1,5 @@
+@startuml a
+class Patient {
+
+}
+@enduml
