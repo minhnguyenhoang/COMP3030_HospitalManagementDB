@@ -7,17 +7,11 @@ class Patient {
     DOB: date
     Ethnicity: varchar
     PreferredLanguage: varchar
-    Occupation: varchar
+    Gender: varchar
+    BiologicalSex: varchar
 
-    NatID: varchar
-    PassportNo: varchar
-    DriversLicenseNo: varchar
     Phone: varchar
     Email: varchar
-    Address: varchar
-    City: varchar
-    State: varchar
-    Country: varchar
 
     FirstVisitDate: date
     LastVisitDate: date
@@ -31,6 +25,18 @@ class Patient {
 
     DNRStatus: bit
     OrganDonorStatus: bit
+}
+
+class PatientPersonalInformation {
+    +PatientID: integer
+    Occupation: varchar
+    NatID: varchar
+    PassportNo: varchar
+    DriversLicenseNo: varchar
+    Address: varchar
+    City: varchar
+    State: varchar
+    Country: varchar
 }
 
 class PatientCoreMedicalInformation {
@@ -47,10 +53,10 @@ class PatientEmergencyContact {
     LastUpdated: date
 }
 
-class PatientHistory {
+class Appointments {
+    +AppointmentID: integer
     +PatientID: integer
     +DoctorID: integer
-    +AppointmentID: integer
     VisitDate: date
     Diagnosis: varchar
     Category: integer
@@ -68,8 +74,145 @@ enum Type_CoreMedInfo {
     7: Other
 }
 
+class Doctor {
+    +DoctorID: integer
+    *DepartmentID: integer
+
+    MedicalLicenseID: varchar
+    DOB: date
+    FirstName: varchar
+    MiddleName: varchar
+    LastName: varchar
+    Gender: varchar
+
+    NationalID: varchar
+    Phone: varchar
+    Email: varchar
+    Address: varchar
+
+    Expertise: varchar
+    DoctorLevel: integer
+    ActiveStatus: integer
+}
+
+enum Type_DoctorActiveStatus {
+    0: Inactive
+    1: Off-duty
+    2: On-demand
+    3: Active
+}
+
+enum Type_DoctorLevel {
+    0: Medical Student
+    1: Intern
+    2: Junior Resident
+    3: Senior Resident
+    4: Chief Resident
+    5: Fellow
+    6: Attending Physician
+    7: Head of Department
+    8: Medical Director
+}
+
+class Department {
+    +DepartmentID: integer
+    DepartmentName: varchar
+    Description: varchar
+
+    *HeadOfDepartment: integer
+}
+
+class PrescriptionHistory {
+    +AppointmentID: integer
+    +MedicineID: integer
+    Amount: integer
+}
+
+class Medicine {
+    +MedicineID: integer
+    MedicineName: varchar
+    Producer: varchar
+    MedicineType: integer
+    MedicineAdministrationMethod: integer
+    MedicineUnit: varchar
+}
+
+class MedicineStockHistory {
+    +MedicineID: integer
+    AddRemove: bit
+    Amount: integer
+    *AppointmentID: varchar
+    Note: varchar
+}
+
+enum Type_MedicineFunction {
+    0: Analgesic
+    1: Antibiotic
+    2: Antifungal
+    3: Antihistamine
+    4: Antipyretic
+    5: Antiviral
+    6: Anticoagulant
+    7: Antidepressant
+    8: Antineoplastic
+    9: Antipsychotic
+    10: Bronchodilator
+    11: Corticosteroid
+    12: Mood Stabiliser
+    13: Statin
+    14: Antacid
+    15: Proton Pump Inhibitor
+    16: H2 receptor antagonist
+    17: Antiemetic
+    18: Anticonvulsant
+    19: Diuretic
+    20: Beta Blocker
+    21: Calcium Channel Blocker
+    22: ACE Inhibitor
+    23: Antidiabetic
+    24: Thyroid Hormones
+    25: Hormonal Contraceptive
+    26: Sedative
+    27: Stimulant
+    28: Immunosuppressant
+    29: Vaccine
+}
+
+enum Type_MedicineAdministration {
+    0: Oral
+    1: Sublingual
+    2: Buccal
+    3: Topical
+    4: Ophthalmic
+    5: Otic
+    6: Nasal
+    7: Suppositories
+    8: Transdermal
+    9: Inhalers
+    10: Nebulised
+    11: Intramuscular
+    12: Subcutaneous
+    13: Intravenous
+    14: Intradermal
+    15: Intrathecal
+    16: Epidural
+    17: Intraarticular
+    18: Intraosseous
+    19: Implant
+}
+
 Patient -> PatientEmergencyContact
-Patient -> PatientHistory
+Patient -> Appointments
 Patient -> PatientCoreMedicalInformation
-PatientCoreMedicalInformation -> Type_CoreMedInfo
+Patient -> PatientPersonalInformation
+PatientCoreMedicalInformation <- Type_CoreMedInfo
+Doctor <- Type_DoctorActiveStatus
+Doctor <- Type_DoctorLevel
+Doctor -> Appointments
+Department -> Doctor
+Medicine <- Type_MedicineFunction
+Medicine <- Type_MedicineAdministration
+Medicine -> PrescriptionHistory
+Medicine -> MedicineStockHistory
+Appointments -> PrescriptionHistory
 @enduml
