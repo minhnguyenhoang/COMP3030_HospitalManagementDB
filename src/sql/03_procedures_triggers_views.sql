@@ -20,6 +20,19 @@ FROM Patient p
 LEFT JOIN PatientPersonalInformation ppi ON p.PatientID = ppi.PatientID
 LEFT JOIN PatientEmergencyContact pec ON p.PatientID = pec.PatientID;
 
+-- View: Patient History (Joins Patient, Personal, and Emergency Contact)
+CREATE OR REPLACE VIEW View_PatientFullProfile AS
+SELECT 
+    p.PatientID,
+    CONCAT(p.FirstName, ' ', p.LastName) AS FullName,
+    p.DOB,
+    p.Phone,
+    ppi.City,
+    pec.ContactInformation AS EmergencyContact
+FROM Patient p
+LEFT JOIN PatientPersonalInformation ppi ON p.PatientID = ppi.PatientID
+LEFT JOIN PatientEmergencyContact pec ON p.PatientID = pec.PatientID;
+
 -- View: Active Doctors
 -- This will now show "John Doe" because we added him in File 2
 CREATE OR REPLACE VIEW View_AvailableDoctors AS
@@ -32,6 +45,8 @@ FROM Doctor d
 JOIN Department dept ON d.DepartmentID = dept.DepartmentID
 JOIN Type_DoctorLevel lvl ON d.DoctorLevel = lvl.ID
 WHERE d.ActiveStatus IN (2, 3); -- On-demand or Active
+
+
 
 -- ==========================================
 -- 2. STORED PROCEDURES
@@ -74,6 +89,11 @@ BEGIN
     VALUES (p_AppointmentID, p_VisitDate, p_MedicineID, p_Amount);
 END //
 
+-- CREATE PROCEDURE sp_TrackMedicineStock(
+-- 	IN p_
+-- );
+-- END //
+
 DELIMITER ;
 
 -- ==========================================
@@ -92,6 +112,27 @@ BEGIN
     -- AddRemove: 0 (Remove/Deduct), defined as BIT
     INSERT INTO MedicineStockHistory (MedicineID, AddRemove, Amount, AppointmentID, Note)
     VALUES (NEW.MedicineID, 0, NEW.Amount, NEW.AppointmentID, 'Prescription Deduction');
+END //
+
+-- Trigger: To disallow stock removals if not enough
+-- Requirement: Adding a MedicineStockHistory entry with AddRemove = 0 will check if 
+CREATE TRIGGER trg_PreventNegativeMedicineStock
+BEFORE INSERT ON MedicineStockHistory
+FOR EACH ROW
+BEGIN
+    DECLARE current_stock INT;
+
+    -- Calculate current stock for this medicine
+    SELECT COALESCE(SUM(CASE WHEN AddRemove = 1 THEN Amount ELSE -Amount END), 0)
+    INTO current_stock
+    FROM MedicineStockHistory
+    WHERE MedicineID = NEW.MedicineID;
+
+    -- If this is a removal, check stock
+    IF NEW.AddRemove = 0 AND current_stock < NEW.Amount THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Insufficient medicine stock';
+    END IF;
 END //
 
 DELIMITER ;

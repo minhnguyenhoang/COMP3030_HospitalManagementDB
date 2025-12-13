@@ -167,12 +167,13 @@ CREATE TABLE MedicineStockHistory (
     Amount INT NOT NULL,
     AppointmentID INT, 
     Note VARCHAR(255),
-    FOREIGN KEY (MedicineID) REFERENCES Medicine(MedicineID)
+    FOREIGN KEY (MedicineID) REFERENCES Medicine(MedicineID),
+	FOREIGN KEY (AppointmentID) REFERENCES Appointments(AppointmentID)
 );
 
 -- Adding constraints to Medicine Stock History
 ALTER TABLE MedicineStockHistory
-ADD CONSTRAINT CHK_AppointmentID CHECK (AppointmentID IS NOT NULL OR AddRemove = 0);
+ADD CONSTRAINT CHK_AppointmentID CHECK (AppointmentID IS NOT NULL OR AddRemove = 1);
 
 -- ==========================================
 -- 4. GENERAL INDEXING
