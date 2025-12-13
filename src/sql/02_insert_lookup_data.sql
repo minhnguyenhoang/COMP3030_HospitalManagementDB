@@ -51,12 +51,12 @@ INSERT INTO Department (DepartmentName, Description)
 VALUES ('Cardiology', 'Heart and Vascular health');
 
 -- Create a Doctor (ID: 1, Active, Attending Physician)
-INSERT INTO Doctor (DepartmentID, DoctorLevel, ActiveStatus, FirstName, LastName, Gender, MedicalLicenseID, DOB, Phone, Email)
-VALUES (1, 6, 3, 'John', 'Doe', 'Male', 'LIC-99999', '1980-01-01', '555-0199', 'dr.doe@hospital.com');
+INSERT INTO Doctor (DepartmentID, DoctorLevel, ActiveStatus, FirstName, LastName, Gender, MedicalLicenseID, DOB, Phone, Email, NationalID, Expertise)
+VALUES (1, 6, 3, 'John', 'Doe', 'Male', 'LIC-99999', '1980-01-01', '555-0199', 'dr.doe@hospital.com', 'N0000001', 'Surgeon');
 
 -- Create a Patient (ID: 1)
-INSERT INTO Patient (FirstName, LastName, DOB, Gender, Phone, Email)
-VALUES ('Jane', 'Smith', '1995-05-20', 'Female', '555-0100', 'jane.smith@email.com');
+INSERT INTO Patient (FirstName, LastName, DOB, Gender, BiologicalSex, Phone, Email, FirstVisitDate, LastVisitDate)
+VALUES ('Jane', 'Smith', '1995-05-20', 'Female', 'Female', '555-0100', 'jane.smith@email.com', '2025-01-01', '2025-01-01');
 
 -- Create a Medicine (ID: 1)
 INSERT INTO Medicine (MedicineName, Producer, MedicineType, MedicineAdministrationMethod, MedicineUnit)

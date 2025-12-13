@@ -22,7 +22,7 @@ CREATE TABLE Type_DoctorActiveStatus (ID INT PRIMARY KEY, StatusName VARCHAR(50)
 -- Department
 CREATE TABLE Department (
     DepartmentID INT AUTO_INCREMENT PRIMARY KEY,
-    DepartmentName VARCHAR(100),
+    DepartmentName VARCHAR(100) NOT NULL,
     Description VARCHAR(255),
     HeadOfDepartment INT
 );
@@ -30,20 +30,20 @@ CREATE TABLE Department (
 -- Doctor
 CREATE TABLE Doctor (
     DoctorID INT AUTO_INCREMENT PRIMARY KEY,
-    DepartmentID INT,
+    DepartmentID INT NOT NULL,
     MedicalLicenseID VARCHAR(50),
-    DOB DATE,
-    FirstName VARCHAR(50),
+    DOB DATE NOT NULL,
+    FirstName VARCHAR(50) NOT NULL,
     MiddleName VARCHAR(50),
     LastName VARCHAR(50),
-    Gender VARCHAR(20),
-    NationalID VARCHAR(20),
+    Gender VARCHAR(20) NOT NULL,
+    NationalID VARCHAR(20) NOT NULL,
     Phone VARCHAR(20),
     Email VARCHAR(100),
     Address VARCHAR(255),
-    Expertise VARCHAR(100),
-    DoctorLevel INT,
-    ActiveStatus INT,
+    Expertise VARCHAR(100) NOT NULL,
+    DoctorLevel INT NOT NULL,
+    ActiveStatus INT NOT NULL,
     FOREIGN KEY (DepartmentID) REFERENCES Department(DepartmentID),
     FOREIGN KEY (DoctorLevel) REFERENCES Type_DoctorLevel(ID),
     FOREIGN KEY (ActiveStatus) REFERENCES Type_DoctorActiveStatus(ID)
@@ -57,18 +57,18 @@ FOREIGN KEY (HeadOfDepartment) REFERENCES Doctor(DoctorID);
 -- Patient
 CREATE TABLE Patient (
     PatientID INT AUTO_INCREMENT PRIMARY KEY,
-    FirstName VARCHAR(50),
+    FirstName VARCHAR(50) NOT NULL,
     MiddleName VARCHAR(50),
     LastName VARCHAR(50),
-    DOB DATE,
+    DOB DATE NOT NULL,
     Ethnicity VARCHAR(50),
     PreferredLanguage VARCHAR(50),
-    Gender VARCHAR(20),
-    BiologicalSex VARCHAR(20),
+    Gender VARCHAR(20) NOT NULL,
+    BiologicalSex VARCHAR(20) NOT NULL,
     Phone VARCHAR(20),
     Email VARCHAR(100),
-    FirstVisitDate DATE,
-    LastVisitDate DATE,
+    FirstVisitDate DATE NOT NULL,
+    LastVisitDate DATE NOT NULL,
     InsuranceID VARCHAR(50),
     InsuranceProvider VARCHAR(100),
     BloodType INT,
@@ -106,21 +106,21 @@ CREATE TABLE PatientCoreMedicalInformation (
 CREATE TABLE PatientEmergencyContact (
     ContactID INT AUTO_INCREMENT PRIMARY KEY,
     PatientID INT,
-    ContactType VARCHAR(50),
+    ContactType VARCHAR(50) NOT NULL,
     ContactInformation VARCHAR(255),
-    Relationship VARCHAR(50),
-    LastUpdated DATE,
+    Relationship VARCHAR(50) NOT NULL,
+    LastUpdated DATE NOT NULL,
     FOREIGN KEY (PatientID) REFERENCES Patient(PatientID)
 );
 
 -- Medicine
 CREATE TABLE Medicine (
     MedicineID INT AUTO_INCREMENT PRIMARY KEY,
-    MedicineName VARCHAR(100),
+    MedicineName VARCHAR(100) NOT NULL,
     Producer VARCHAR(100),
-    MedicineType INT,
-    MedicineAdministrationMethod INT,
-    MedicineUnit VARCHAR(20),
+    MedicineType INT NOT NULL,
+    MedicineAdministrationMethod INT NOT NULL,
+    MedicineUnit VARCHAR(20) NOT NULL,
     FOREIGN KEY (MedicineType) REFERENCES Type_MedicineFunction(ID),
     FOREIGN KEY (MedicineAdministrationMethod) REFERENCES Type_MedicineAdministration(ID)
 );
@@ -138,15 +138,9 @@ CREATE TABLE Appointments (
     DoctorID INT NOT NULL,
     VisitDate DATE NOT NULL,
     Diagnosis VARCHAR(255),
-    Category INT,
+    Category VARCHAR(50),
     Note VARCHAR(255),
     PRIMARY KEY (AppointmentID, VisitDate)
-)
-PARTITION BY RANGE (YEAR(VisitDate)) (
-    PARTITION p_old VALUES LESS THAN (2024),
-    PARTITION p_2024 VALUES LESS THAN (2025),
-    PARTITION p_2025 VALUES LESS THAN (2026),
-    PARTITION p_future VALUES LESS THAN MAXVALUE
 );
 
 -- Manual Indexes for Appointments (since FKs were removed)
@@ -157,26 +151,28 @@ CREATE INDEX idx_appt_doctor ON Appointments(DoctorID);
 -- FIX: Cannot FK to 'Appointments' because 'Appointments' is partitioned.
 CREATE TABLE PrescriptionHistory (
     HistoryID INT AUTO_INCREMENT PRIMARY KEY,
-    AppointmentID INT,
-    VisitDate DATE, 
-    MedicineID INT,
+    AppointmentID INT NOT NULL,
+	MedicineID INT NOT NULL,
+    PrescriptionDate DATE,
     Amount INT,
-    FOREIGN KEY (MedicineID) REFERENCES Medicine(MedicineID)
+    FOREIGN KEY (MedicineID) REFERENCES Medicine(MedicineID),
+    FOREIGN KEY (AppointmentID) REFERENCES Appointments(AppointmentID)
 );
-
--- Manual Index to link back to appointments
-CREATE INDEX idx_presc_appt ON PrescriptionHistory(AppointmentID, VisitDate);
 
 -- Medicine Stock History
 CREATE TABLE MedicineStockHistory (
     StockID INT AUTO_INCREMENT PRIMARY KEY,
-    MedicineID INT,
-    AddRemove BIT(1),
-    Amount INT,
+    MedicineID INT NOT NULL,
+    AddRemove BIT(1) NOT NULL,
+    Amount INT NOT NULL,
     AppointmentID INT, 
     Note VARCHAR(255),
     FOREIGN KEY (MedicineID) REFERENCES Medicine(MedicineID)
 );
+
+-- Adding constraints to Medicine Stock History
+ALTER TABLE MedicineStockHistory
+ADD CONSTRAINT CHK_AppointmentID CHECK (AppointmentID IS NOT NULL OR AddRemove = 0);
 
 -- ==========================================
 -- 4. GENERAL INDEXING
