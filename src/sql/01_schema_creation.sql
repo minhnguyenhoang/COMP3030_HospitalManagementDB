@@ -140,7 +140,9 @@ CREATE TABLE Appointments (
     Diagnosis VARCHAR(255),
     Category VARCHAR(50),
     Note VARCHAR(255),
-    PRIMARY KEY (AppointmentID, VisitDate)
+    PRIMARY KEY (AppointmentID, VisitDate),
+    FOREIGN KEY (PatientID) REFERENCES Patient(PatientID),
+    FOREIGN KEY (DoctorID) REFERENCES Doctor(DoctorID)
 );
 
 -- Manual Indexes for Appointments (since FKs were removed)
