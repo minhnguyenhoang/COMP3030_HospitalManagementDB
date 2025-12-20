@@ -13,14 +13,14 @@ cd backend
 pip install -r requirements.txt
 ```
 
-### 2. Configure Database
+<!-- ### 2. Configure Database
 Edit `backend/.env` with your MySQL credentials:
 ```env
 DB_USER=root
 DB_PASSWORD=your_password_here
 DB_HOST=localhost
 DB_PORT=3307
-```
+``` -->
 
 ### 3. Run Complete Setup
 ```bash
