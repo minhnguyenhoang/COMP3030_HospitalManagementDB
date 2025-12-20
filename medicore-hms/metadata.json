@@ -1,0 +1,5 @@
+{
+  "name": "MediCore HMS",
+  "description": "A modern, responsive Hospital Management System dashboard for doctors, receptionists, and administrators. Features patient management, AI-powered medical summaries, and inventory tracking.",
+  "requestFramePermissions": []
+}
