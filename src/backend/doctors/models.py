@@ -80,7 +80,7 @@ class Doctor(models.Model):
     
     class Meta:
         db_table = 'Doctor'
-        ordering = ['first_name', 'last_name']
+        ordering = ['-id']
         indexes = [models.Index(fields=['medical_license_id'])]
         verbose_name = 'Doctor'
         verbose_name_plural = 'Doctors'

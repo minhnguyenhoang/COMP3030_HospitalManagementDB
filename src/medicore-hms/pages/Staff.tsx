@@ -136,7 +136,20 @@ const StaffPage: React.FC = () => {
     setLoading(true);
     try {
       const api = await import('../src/api');
-      const payload = { ...form };
+      const payload = {
+        first_name: form.first_name,
+        last_name: form.last_name,
+        expertise: form.expertise,
+        department_id: form.department_id,
+        doctor_level_id: form.doctor_level,
+        active_status_id: form.active_status,
+        dob: form.dob,
+        gender: form.gender,
+        national_id: form.national_id,
+        phone: form.phone,
+        email: form.email,
+        address: form.address
+      };
       await api.createDoctor(payload);
       // refresh
       const docs = await api.fetchDoctors();
@@ -228,7 +241,20 @@ const StaffPage: React.FC = () => {
     setLoading(true);
     try {
       const api = await import('../src/api');
-      const payload = { ...form };
+      const payload = {
+        first_name: form.first_name,
+        last_name: form.last_name,
+        expertise: form.expertise,
+        department_id: form.department_id,
+        doctor_level_id: form.doctor_level,
+        active_status_id: form.active_status,
+        dob: form.dob,
+        gender: form.gender,
+        national_id: form.national_id,
+        phone: form.phone,
+        email: form.email,
+        address: form.address
+      };
       await api.updateDoctor(editingDoctor.id, payload);
 
       // Refresh list
