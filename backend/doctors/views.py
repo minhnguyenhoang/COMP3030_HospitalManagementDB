@@ -1,4 +1,6 @@
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, permissions, filters, status
+from rest_framework.response import Response
+from django.db.models.deletion import ProtectedError
 from .models import Doctor, Department, DoctorLevel, DoctorActiveStatus
 from .serializers import DoctorSerializer, DepartmentSerializer, DoctorLevelSerializer, DoctorActiveStatusSerializer
 
@@ -10,6 +12,16 @@ class DoctorViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['first_name', 'last_name', 'expertise', 'department__department_name']
     ordering_fields = ['first_name', 'last_name']
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete doctor with custom error message"""
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except ProtectedError:
+            return Response(
+                {'detail': 'Cannot delete doctor with existing appointments.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Filter, Plus, ChevronRight, Eye } from 'lucide-react';
+import { Search, Filter, Plus, ChevronRight, Eye, Pencil, Trash2 } from 'lucide-react';
 import { Patient } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { showSuccess, showError } from '../src/utils/toast';
@@ -11,6 +11,8 @@ const Patients: React.FC = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [editingPatient, setEditingPatient] = useState<any>(null);
   const [form, setForm] = useState({
     first_name: '',
     last_name: '',
@@ -106,6 +108,112 @@ const Patients: React.FC = () => {
       setLoading(false);
     }
   }
+
+  const handleOpenEdit = (patient: any) => {
+    setEditingPatient(patient);
+    // Fetch full patient data
+    import('../src/api').then(async (api) => {
+      try {
+        const fullData = await api.fetchPatient(patient.id);
+        setForm({
+          first_name: fullData.first_name || '',
+          last_name: fullData.last_name || '',
+          dob: fullData.dob || '',
+          gender: fullData.gender || 'Male',
+          biological_sex: fullData.biological_sex || 'Male',
+          phone: fullData.phone || '',
+          email: fullData.email || '',
+          blood_type: fullData.blood_type || '',
+          allergies: fullData.allergies || '',
+          chronic_conditions: fullData.chronic_conditions || ''
+        });
+        setShowEdit(true);
+      } catch (err: any) {
+        showError('Failed to load patient data: ' + err.message);
+      }
+    });
+  };
+
+  const handleCloseEdit = () => {
+    setShowEdit(false);
+    setEditingPatient(null);
+    setForm({
+      first_name: '',
+      last_name: '',
+      dob: '',
+      gender: 'Male',
+      biological_sex: 'Male',
+      phone: '',
+      email: '',
+      blood_type: '',
+      allergies: '',
+      chronic_conditions: ''
+    });
+  };
+
+  const handleUpdate = async (ev: React.FormEvent) => {
+    ev.preventDefault();
+
+    if (!editingPatient) return;
+
+    // Validation
+    if (!form.first_name || !form.last_name) {
+      return showError('First name and last name are required');
+    }
+    if (!form.dob) {
+      return showError('Date of birth is required');
+    }
+    if (!form.phone) {
+      return showError('Phone number is required');
+    }
+
+    setLoading(true);
+    try {
+      const api = await import('../src/api');
+      const payload = { ...form, first_visit_date: form.dob, last_visit_date: form.dob };
+      const res = await api.updatePatient(editingPatient.id, payload);
+
+      // Update local state
+      setPatients(prev => prev.map(p =>
+        p.id === editingPatient.id
+          ? {
+              ...p,
+              name: `${res.first_name} ${res.last_name}`,
+              dob: res.dob,
+              gender: res.gender || '',
+              phone: res.phone || '',
+              bloodGroup: res.blood_type || ''
+            }
+          : p
+      ));
+
+      handleCloseEdit();
+      showSuccess('Patient updated successfully');
+    } catch (err: any) {
+      showError('Failed to update patient: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (patientId: string) => {
+    if (!confirm('Are you sure you want to delete this patient? This action cannot be undone.')) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const api = await import('../src/api');
+      await api.deletePatient(patientId);
+      setPatients(prev => prev.filter(p => p.id !== patientId));
+      showSuccess('Patient deleted successfully');
+    } catch (err: any) {
+      showError('Failed to delete patient: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredPatients = patients.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           p.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -238,6 +346,125 @@ const Patients: React.FC = () => {
           </form>
         </div>
       )}
+
+      {/* Edit Patient Modal */}
+      {showEdit && editingPatient && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <form onSubmit={handleUpdate} className="bg-white p-6 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-bold mb-4">Edit Patient</h3>
+
+            {/* Basic Information */}
+            <div className="mb-4">
+              <h4 className="text-sm font-semibold text-slate-700 mb-2">Basic Information</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  value={form.first_name}
+                  onChange={(e)=>setForm({...form, first_name: e.target.value})}
+                  placeholder="First name *"
+                  className="p-2 border rounded"
+                  required
+                />
+                <input
+                  value={form.last_name}
+                  onChange={(e)=>setForm({...form, last_name: e.target.value})}
+                  placeholder="Last name *"
+                  className="p-2 border rounded"
+                  required
+                />
+                <input
+                  type="date"
+                  value={form.dob}
+                  onChange={(e)=>setForm({...form, dob: e.target.value})}
+                  className="p-2 border rounded"
+                  required
+                />
+                <select
+                  value={form.gender}
+                  onChange={(e)=>setForm({...form, gender: e.target.value})}
+                  className="p-2 border rounded"
+                >
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+                <select
+                  value={form.biological_sex}
+                  onChange={(e)=>setForm({...form, biological_sex: e.target.value})}
+                  className="p-2 border rounded"
+                >
+                  <option value="Male">Biological Sex: Male</option>
+                  <option value="Female">Biological Sex: Female</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Contact Information */}
+            <div className="mb-4">
+              <h4 className="text-sm font-semibold text-slate-700 mb-2">Contact Information</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  type="tel"
+                  value={form.phone}
+                  onChange={(e)=>setForm({...form, phone: e.target.value})}
+                  placeholder="Phone *"
+                  className="p-2 border rounded"
+                  required
+                />
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e)=>setForm({...form, email: e.target.value})}
+                  placeholder="Email (optional)"
+                  className="p-2 border rounded"
+                />
+              </div>
+            </div>
+
+            {/* Medical Information */}
+            <div className="mb-4">
+              <h4 className="text-sm font-semibold text-slate-700 mb-2">Medical Information</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <select
+                  value={form.blood_type}
+                  onChange={(e)=>setForm({...form, blood_type: e.target.value})}
+                  className="p-2 border rounded"
+                >
+                  <option value="">Blood Type (optional)</option>
+                  <option value="A+">A+</option>
+                  <option value="A-">A-</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="AB+">AB+</option>
+                  <option value="AB-">AB-</option>
+                  <option value="O+">O+</option>
+                  <option value="O-">O-</option>
+                </select>
+                <div></div>
+                <textarea
+                  value={form.allergies}
+                  onChange={(e)=>setForm({...form, allergies: e.target.value})}
+                  placeholder="Allergies (optional, comma-separated)"
+                  className="p-2 border rounded col-span-2"
+                  rows={2}
+                />
+                <textarea
+                  value={form.chronic_conditions}
+                  onChange={(e)=>setForm({...form, chronic_conditions: e.target.value})}
+                  placeholder="Chronic Conditions (optional, comma-separated)"
+                  className="p-2 border rounded col-span-2"
+                  rows={2}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 mt-4">
+              <button type="button" onClick={handleCloseEdit} className="px-4 py-2 rounded border">Cancel</button>
+              <button type="submit" disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50">{loading ? 'Updating...' : 'Update Patient'}</button>
+            </div>
+          </form>
+        </div>
+      )}
+
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
@@ -298,13 +525,30 @@ const Patients: React.FC = () => {
                     <td className="px-6 py-4 text-slate-600 text-sm">{patient.lastVisit}</td>
                     <td className="px-6 py-4 text-slate-600 text-sm">{patient.phone}</td>
                     <td className="px-6 py-4 text-right">
-                      <button 
-                        onClick={() => navigate(`/patients/${patient.id}`)}
-                        className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"
-                        title="View Profile"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => navigate(`/patients/${patient.id}`)}
+                          className="text-blue-600 hover:bg-blue-50 p-2 rounded-lg transition-colors"
+                          title="View Profile"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleOpenEdit(patient)}
+                          className="text-green-600 hover:bg-green-50 p-2 rounded-lg transition-colors"
+                          title="Edit Patient"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(patient.id)}
+                          className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                          title="Delete Patient"
+                          disabled={loading}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

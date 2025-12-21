@@ -1,12 +1,14 @@
 import React from 'react';
 import { Staff } from '../types';
-import { Mail, Phone, MoreHorizontal } from 'lucide-react';
+import { Mail, Phone, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { showSuccess, showError } from '../src/utils/toast';
 
 const StaffPage: React.FC = () => {
   const [staff, setStaff] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [showAdd, setShowAdd] = React.useState(false);
+  const [showEdit, setShowEdit] = React.useState(false);
+  const [editingDoctor, setEditingDoctor] = React.useState<any>(null);
   const [showAddDept, setShowAddDept] = React.useState(false);
   const [departments, setDepartments] = React.useState<any[]>([]);
   const [levels, setLevels] = React.useState<any[]>([]);
@@ -20,7 +22,10 @@ const StaffPage: React.FC = () => {
     active_status: '',
     dob: '',
     gender: '',
-    national_id: ''
+    national_id: '',
+    phone: '',
+    email: '',
+    address: ''
   });
   const [deptForm, setDeptForm] = React.useState({ department_name: '', description: '' });
 
@@ -57,7 +62,10 @@ const StaffPage: React.FC = () => {
       active_status: '',
       dob: '',
       gender: '',
-      national_id: ''
+      national_id: '',
+      phone: '',
+      email: '',
+      address: ''
     });
   };
 
@@ -133,6 +141,117 @@ const StaffPage: React.FC = () => {
       setLoading(false);
     }
   }
+
+  const handleOpenEdit = async (doctorId: number) => {
+    setLoading(true);
+    try {
+      const api = await import('../src/api');
+      const docs = await api.fetchDoctors();
+      const list = docs.results || docs;
+      const doctor = list.find((d: any) => d.id === doctorId);
+
+      if (doctor) {
+        setEditingDoctor(doctor);
+        setForm({
+          first_name: doctor.first_name || '',
+          last_name: doctor.last_name || '',
+          expertise: doctor.expertise || '',
+          department_id: doctor.department?.id || '',
+          doctor_level: doctor.doctor_level?.id || '',
+          active_status: doctor.active_status?.id || '',
+          dob: doctor.dob || '',
+          gender: doctor.gender || '',
+          national_id: doctor.national_id || '',
+          phone: doctor.phone || '',
+          email: doctor.email || '',
+          address: doctor.address || ''
+        });
+        setShowEdit(true);
+      }
+    } catch (err: any) {
+      showError('Failed to load doctor data: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCloseEdit = () => {
+    setShowEdit(false);
+    setEditingDoctor(null);
+    setForm({
+      first_name: '',
+      last_name: '',
+      expertise: '',
+      department_id: '',
+      doctor_level: '',
+      active_status: '',
+      dob: '',
+      gender: '',
+      national_id: '',
+      phone: '',
+      email: '',
+      address: ''
+    });
+  };
+
+  const handleUpdate = async (ev: React.FormEvent) => {
+    ev.preventDefault();
+
+    if (!editingDoctor) return;
+
+    // Validation
+    if (!form.first_name || !form.last_name) {
+      return showError('First name and last name are required');
+    }
+    if (!form.expertise) {
+      return showError('Role/Expertise is required');
+    }
+
+    setLoading(true);
+    try {
+      const api = await import('../src/api');
+      const payload = { ...form };
+      await api.updateDoctor(editingDoctor.id, payload);
+
+      // Refresh list
+      const docs = await api.fetchDoctors();
+      const list = docs.results || docs;
+      setStaff(list.map((d: any) => ({
+        id: d.id,
+        name: `${d.first_name} ${d.last_name}`.trim(),
+        role: d.doctor_level || 'Doctor',
+        department: d.department?.department_name || '',
+        status: d.active_status || 'Active',
+        avatar: (d.first_name && d.last_name) ? d.first_name[0] + d.last_name[0] : d.first_name?.[0] || 'Dr'
+      })));
+
+      handleCloseEdit();
+      showSuccess('Staff member updated successfully');
+    } catch (err: any) {
+      showError('Update failed: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (doctorId: number) => {
+    if (!confirm('Are you sure you want to delete this staff member? This action cannot be undone.')) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const api = await import('../src/api');
+      await api.deleteDoctor(doctorId);
+      setStaff(prev => prev.filter(s => s.id !== doctorId));
+      showSuccess('Staff member deleted successfully');
+    } catch (err: any) {
+      showError('Delete failed: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -153,9 +272,23 @@ const StaffPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {staff.map((person) => (
           <div key={person.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col items-center text-center relative hover:shadow-md transition-shadow">
-            <button className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-              <MoreHorizontal className="w-5 h-5" />
-            </button>
+            <div className="absolute top-4 right-4 flex gap-1">
+              <button
+                onClick={() => handleOpenEdit(person.id)}
+                className="text-green-600 hover:bg-green-50 p-1.5 rounded transition-colors"
+                title="Edit"
+              >
+                <Pencil className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleDelete(person.id)}
+                className="text-red-600 hover:bg-red-50 p-1.5 rounded transition-colors"
+                title="Delete"
+                disabled={loading}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
             
             <div className="w-20 h-20 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xl font-bold mb-4 border border-slate-200">
               {person.avatar}
@@ -221,6 +354,54 @@ const StaffPage: React.FC = () => {
               <div className="flex justify-end gap-2 mt-4">
                 <button type="button" onClick={handleCloseAdd} className="px-4 py-2 rounded border">Cancel</button>
                 <button type="submit" disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50">{loading ? 'Creating...' : 'Create'}</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Edit Staff Modal */}
+      {showEdit && editingDoctor && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 overflow-y-auto p-4">
+          <form onSubmit={handleUpdate} className="bg-white p-6 rounded-xl w-full max-w-md my-8">
+            <h3 className="text-lg font-bold mb-4">Edit Staff Member</h3>
+            <div className="grid grid-cols-1 gap-3 max-h-[70vh] overflow-y-auto px-1">
+              <div className="grid grid-cols-2 gap-3">
+                <input value={form.first_name} onChange={(e)=>setForm({...form, first_name: e.target.value})} placeholder="First name *" className="p-2 border rounded" required />
+                <input value={form.last_name} onChange={(e)=>setForm({...form, last_name: e.target.value})} placeholder="Last name *" className="p-2 border rounded" required />
+              </div>
+              <input value={form.national_id} onChange={(e)=>setForm({...form, national_id: e.target.value})} placeholder="National ID *" className="p-2 border rounded" required />
+              <div className="grid grid-cols-2 gap-3">
+                <input type="date" value={form.dob} onChange={(e)=>setForm({...form, dob: e.target.value})} placeholder="Date of Birth *" className="p-2 border rounded" required />
+                <select value={form.gender} onChange={(e)=>setForm({...form, gender: e.target.value})} className="p-2 border rounded" required>
+                  <option value="">Gender *</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <input value={form.phone} onChange={(e)=>setForm({...form, phone: e.target.value})} placeholder="Phone" className="p-2 border rounded" />
+              <input type="email" value={form.email} onChange={(e)=>setForm({...form, email: e.target.value})} placeholder="Email" className="p-2 border rounded" />
+              <input value={form.address} onChange={(e)=>setForm({...form, address: e.target.value})} placeholder="Address" className="p-2 border rounded" />
+              <input value={form.expertise} onChange={(e)=>setForm({...form, expertise: e.target.value})} placeholder="Role / Expertise *" className="p-2 border rounded" required />
+              <select value={form.department_id} onChange={(e)=>setForm({...form, department_id: e.target.value})} className="p-2 border rounded" required>
+                <option value="">Select Department *</option>
+                {departments.map((d:any)=> <option key={d.id} value={d.id}>{d.department_name}</option>)}
+              </select>
+              <div className="grid grid-cols-2 gap-3">
+                <select value={form.doctor_level} onChange={(e)=>setForm({...form, doctor_level: e.target.value})} className="p-2 border rounded" required>
+                  <option value="">Level *</option>
+                  {levels.map((l:any)=> <option key={l.id} value={l.id}>{l.title}</option>)}
+                </select>
+                <select value={form.active_status} onChange={(e)=>setForm({...form, active_status: e.target.value})} className="p-2 border rounded" required>
+                  <option value="">Status *</option>
+                  {statuses.map((s:any)=> <option key={s.id} value={s.id}>{s.status_name}</option>)}
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-2 mt-4">
+                <button type="button" onClick={handleCloseEdit} className="px-4 py-2 rounded border">Cancel</button>
+                <button type="submit" disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50">{loading ? 'Updating...' : 'Update'}</button>
               </div>
             </div>
           </form>

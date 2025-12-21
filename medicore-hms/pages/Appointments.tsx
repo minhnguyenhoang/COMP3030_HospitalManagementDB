@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Calendar, User, FileText, CheckCircle } from 'lucide-react';
+import { Search, Calendar, User, FileText, CheckCircle, Trash2 } from 'lucide-react';
 import { UserRole } from '../types';
 import { showSuccess, showError, showWarning } from '../src/utils/toast';
 
@@ -191,6 +191,24 @@ const Appointments: React.FC<AppointmentsProps> = ({ role }) => {
     }
   }
 
+  const handleDeleteAppointment = async (appointmentId: number) => {
+    if (!confirm('Are you sure you want to cancel this appointment?')) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const api = await import('../src/api');
+      await api.deleteAppointment(appointmentId);
+      setAppointments(prev => prev.filter(a => a.id !== appointmentId));
+      showSuccess('Appointment cancelled successfully');
+    } catch (err: any) {
+      showError('Failed to cancel appointment: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Filter appointments for today
   const todayAppointments = appointments.filter(appt => {
     const apptDate = new Date(appt.visit_date);
@@ -258,21 +276,33 @@ const Appointments: React.FC<AppointmentsProps> = ({ role }) => {
                   }
 
                   return (
-                    <button
-                      key={appt.id || i}
-                      onClick={() => setSelectedPatient(patient?.id || patient || null)}
-                      className={`w-full text-left p-3 rounded-lg text-sm transition-colors border ${
-                        selectedPatient === (patient?.id || patient)
-                          ? 'bg-blue-50 border-blue-200 text-blue-700'
-                          : 'bg-white border-transparent hover:bg-slate-50 text-slate-600'
-                      }`}
-                    >
-                      <div className="font-medium">{patientName}</div>
-                      <div className="text-xs opacity-70 flex justify-between mt-1">
-                        <span>ID: {patient?.id || patient}</span>
-                        <span>{displayTime}</span>
-                      </div>
-                    </button>
+                    <div key={appt.id || i} className="flex gap-2 items-center">
+                      <button
+                        onClick={() => setSelectedPatient(patient?.id || patient || null)}
+                        className={`flex-1 text-left p-3 rounded-lg text-sm transition-colors border ${
+                          selectedPatient === (patient?.id || patient)
+                            ? 'bg-blue-50 border-blue-200 text-blue-700'
+                            : 'bg-white border-transparent hover:bg-slate-50 text-slate-600'
+                        }`}
+                      >
+                        <div className="font-medium">{patientName}</div>
+                        <div className="text-xs opacity-70 flex justify-between mt-1">
+                          <span>ID: {patient?.id || patient}</span>
+                          <span>{displayTime}</span>
+                        </div>
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteAppointment(appt.id);
+                        }}
+                        className="text-red-600 hover:bg-red-50 p-2 rounded transition-colors flex-shrink-0"
+                        title="Cancel Appointment"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   );
                 })
               ) : (

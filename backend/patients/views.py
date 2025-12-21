@@ -1,5 +1,6 @@
 from rest_framework import viewsets, permissions, filters, status
 from rest_framework.response import Response
+from django.db.models.deletion import ProtectedError
 from .models import Patient, PatientCoreMedicalInformation
 from .serializers import PatientSerializer
 
@@ -11,6 +12,16 @@ class PatientViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter]
     search_fields = ['first_name', 'last_name', 'phone', 'email']
     ordering_fields = ['last_visit_date', 'first_name', 'last_name']
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete patient with custom error message"""
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except ProtectedError:
+            return Response(
+                {'detail': 'Cannot delete patient with existing appointments.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     def create(self, request, *args, **kwargs):
         """Create patient and associated medical information"""

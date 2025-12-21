@@ -115,6 +115,221 @@ BEGIN
     VALUES (p_medicine_id, 1, p_amount, p_note);
 END //
 
+-- ==========================================
+-- UPDATE PROCEDURES
+-- ==========================================
+
+-- Procedure: Update Patient Information
+CREATE PROCEDURE sp_UpdatePatient(
+    IN p_patient_id INT,
+    IN p_first_name VARCHAR(50),
+    IN p_middle_name VARCHAR(50),
+    IN p_last_name VARCHAR(50),
+    IN p_dob DATE,
+    IN p_gender VARCHAR(20),
+    IN p_biological_sex VARCHAR(20),
+    IN p_phone VARCHAR(20),
+    IN p_email VARCHAR(100),
+    IN p_blood_type VARCHAR(10),
+    IN p_ethnicity VARCHAR(50),
+    IN p_preferred_language VARCHAR(50),
+    IN p_insurance_id VARCHAR(50),
+    IN p_insurance_provider VARCHAR(100)
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM Patient WHERE id = p_patient_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Patient does not exist.';
+    ELSE
+        UPDATE Patient
+        SET first_name = p_first_name,
+            middle_name = p_middle_name,
+            last_name = p_last_name,
+            dob = p_dob,
+            gender = p_gender,
+            biological_sex = p_biological_sex,
+            phone = p_phone,
+            email = p_email,
+            blood_type = p_blood_type,
+            ethnicity = p_ethnicity,
+            preferred_language = p_preferred_language,
+            insurance_id = p_insurance_id,
+            insurance_provider = p_insurance_provider,
+            last_visit_date = CURDATE()
+        WHERE id = p_patient_id;
+    END IF;
+END //
+
+-- Procedure: Update Doctor Information
+CREATE PROCEDURE sp_UpdateDoctor(
+    IN p_doctor_id INT,
+    IN p_first_name VARCHAR(50),
+    IN p_middle_name VARCHAR(50),
+    IN p_last_name VARCHAR(50),
+    IN p_phone VARCHAR(20),
+    IN p_email VARCHAR(100),
+    IN p_address VARCHAR(255),
+    IN p_expertise VARCHAR(100),
+    IN p_doctor_level_id INT,
+    IN p_active_status_id INT
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM Doctor WHERE id = p_doctor_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Doctor does not exist.';
+    ELSE
+        UPDATE Doctor
+        SET first_name = p_first_name,
+            middle_name = p_middle_name,
+            last_name = p_last_name,
+            phone = p_phone,
+            email = p_email,
+            address = p_address,
+            expertise = p_expertise,
+            doctor_level_id = p_doctor_level_id,
+            active_status_id = p_active_status_id
+        WHERE id = p_doctor_id;
+    END IF;
+END //
+
+-- Procedure: Update Appointment
+CREATE PROCEDURE sp_UpdateAppointment(
+    IN p_appointment_id INT,
+    IN p_visit_date DATETIME,
+    IN p_diagnosis VARCHAR(255),
+    IN p_treatment VARCHAR(255),
+    IN p_note VARCHAR(255)
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM Appointments WHERE id = p_appointment_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Appointment does not exist.';
+    ELSE
+        UPDATE Appointments
+        SET visit_date = p_visit_date,
+            diagnosis = p_diagnosis,
+            treatment = p_treatment,
+            note = p_note
+        WHERE id = p_appointment_id;
+    END IF;
+END //
+
+-- Procedure: Update Medicine Information
+CREATE PROCEDURE sp_UpdateMedicine(
+    IN p_medicine_id INT,
+    IN p_medicine_name VARCHAR(100),
+    IN p_producer VARCHAR(100),
+    IN p_medicine_unit VARCHAR(50),
+    IN p_price DECIMAL(10, 2)
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM Medicine WHERE id = p_medicine_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Medicine does not exist.';
+    ELSE
+        UPDATE Medicine
+        SET medicine_name = p_medicine_name,
+            producer = p_producer,
+            medicine_unit = p_medicine_unit,
+            price = p_price
+        WHERE id = p_medicine_id;
+    END IF;
+END //
+
+-- ==========================================
+-- DELETE PROCEDURES
+-- ==========================================
+
+-- Procedure: Delete Patient
+CREATE PROCEDURE sp_DeletePatient(
+    IN p_patient_id INT
+)
+BEGIN
+    DECLARE appointment_count INT;
+
+    IF NOT EXISTS (SELECT 1 FROM Patient WHERE id = p_patient_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Patient does not exist.';
+    ELSE
+        SELECT COUNT(*) INTO appointment_count
+        FROM Appointments
+        WHERE patient_id = p_patient_id;
+
+        IF appointment_count > 0 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Error: Cannot delete patient with existing appointments.';
+        ELSE
+            DELETE FROM PatientEmergencyContact WHERE patient_id = p_patient_id;
+            DELETE FROM PatientPersonalInformation WHERE patient_id = p_patient_id;
+            DELETE FROM Patient WHERE id = p_patient_id;
+        END IF;
+    END IF;
+END //
+
+-- Procedure: Delete Doctor
+CREATE PROCEDURE sp_DeleteDoctor(
+    IN p_doctor_id INT
+)
+BEGIN
+    DECLARE appointment_count INT;
+
+    IF NOT EXISTS (SELECT 1 FROM Doctor WHERE id = p_doctor_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Doctor does not exist.';
+    ELSE
+        SELECT COUNT(*) INTO appointment_count
+        FROM Appointments
+        WHERE doctor_id = p_doctor_id;
+
+        IF appointment_count > 0 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Error: Cannot delete doctor with existing appointments.';
+        ELSE
+            DELETE FROM Doctor WHERE id = p_doctor_id;
+        END IF;
+    END IF;
+END //
+
+-- Procedure: Delete Appointment
+CREATE PROCEDURE sp_DeleteAppointment(
+    IN p_appointment_id INT
+)
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM Appointments WHERE id = p_appointment_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Appointment does not exist.';
+    ELSE
+        DELETE FROM PrescriptionHistory WHERE appointment_id = p_appointment_id;
+        DELETE FROM MedicineStockHistory WHERE appointment_id = p_appointment_id;
+        DELETE FROM Appointments WHERE id = p_appointment_id;
+    END IF;
+END //
+
+-- Procedure: Delete Medicine
+CREATE PROCEDURE sp_DeleteMedicine(
+    IN p_medicine_id INT
+)
+BEGIN
+    DECLARE usage_count INT;
+
+    IF NOT EXISTS (SELECT 1 FROM Medicine WHERE id = p_medicine_id) THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Error: Medicine does not exist.';
+    ELSE
+        SELECT COUNT(*) INTO usage_count
+        FROM PrescriptionHistory
+        WHERE medicine_id = p_medicine_id;
+
+        IF usage_count > 0 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Error: Cannot delete medicine with prescription history.';
+        ELSE
+            DELETE FROM MedicineStockHistory WHERE medicine_id = p_medicine_id;
+            DELETE FROM Medicine WHERE id = p_medicine_id;
+        END IF;
+    END IF;
+END //
+
 DELIMITER ;
 
 -- ==========================================

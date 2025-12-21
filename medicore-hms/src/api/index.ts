@@ -94,6 +94,14 @@ export async function createAppointment(payload: any) {
   return request('/appointments/', { method: 'POST', body: JSON.stringify(payload) });
 }
 
+export async function updateAppointment(appointmentId: string | number, payload: any) {
+  return request(`/appointments/${appointmentId}/`, { method: 'PUT', body: JSON.stringify(payload) });
+}
+
+export async function deleteAppointment(appointmentId: string | number) {
+  return request(`/appointments/${appointmentId}/`, { method: 'DELETE' });
+}
+
 export async function fetchDoctors() {
   return request('/doctors/');
 }
@@ -104,6 +112,10 @@ export async function createDoctor(payload: any) {
 
 export async function updateDoctor(doctorId: string | number, payload: any) {
   return request(`/doctors/${doctorId}/`, { method: 'PUT', body: JSON.stringify(payload) });
+}
+
+export async function deleteDoctor(doctorId: string | number) {
+  return request(`/doctors/${doctorId}/`, { method: 'DELETE' });
 }
 
 export async function fetchDepartments() {
@@ -128,6 +140,14 @@ export async function fetchMedicines() {
 
 export async function createMedicine(payload: any) {
   return request('/medicines/', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export async function updateMedicine(medicineId: string | number, payload: any) {
+  return request(`/medicines/${medicineId}/`, { method: 'PUT', body: JSON.stringify(payload) });
+}
+
+export async function deleteMedicine(medicineId: string | number) {
+  return request(`/medicines/${medicineId}/`, { method: 'DELETE' });
 }
 
 export async function fetchMedicineTypes() {
@@ -170,15 +190,20 @@ export default {
   deletePatient,
   fetchAppointments,
   createAppointment,
+  updateAppointment,
+  deleteAppointment,
   fetchDoctors,
   createDoctor,
   updateDoctor,
+  deleteDoctor,
   fetchDepartments,
   createDepartment,
   fetchDoctorLevels,
   fetchDoctorStatuses,
   fetchMedicines,
   createMedicine,
+  updateMedicine,
+  deleteMedicine,
   fetchMedicineTypes,
   fetchMedicineAdminMethods,
   fetchMedicineStock,
