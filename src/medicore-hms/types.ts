@@ -46,12 +46,14 @@ export interface Prescription {
 }
 
 export interface Staff {
-  id: string;
+  id: number;
   name: string;
   role: string;
   department: string;
   status: 'Active' | 'On Leave' | 'Off Duty';
   avatar: string;
+  phone: string;
+  email: string;
 }
 
 export interface InventoryItem {

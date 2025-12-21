@@ -2,11 +2,9 @@ import React from 'react';
 import { Staff } from '../types';
 import { Mail, Phone, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { showSuccess, showError } from '../src/utils/toast';
-import { Popup } from 'reactjs-popup';
-import 'reactjs-popup/dist/index.css';
 
 const StaffPage: React.FC = () => {
-  const [staff, setStaff] = React.useState<any[]>([]);
+  const [staff, setStaff] = React.useState<Staff>([]);
   const [loading, setLoading] = React.useState(false);
   const [showAdd, setShowAdd] = React.useState(false);
   const [showEdit, setShowEdit] = React.useState(false);
@@ -39,7 +37,15 @@ const StaffPage: React.FC = () => {
         const [docs, deps, lvls, stats] = await Promise.all([api.fetchDoctors(), api.fetchDepartments(), api.fetchDoctorLevels(), api.fetchDoctorStatuses()]);
         const list = docs.results || docs;
         if (!mounted) return;
-        setStaff(list.map((d: any) => ({ id: d.id, name: `${d.first_name} ${d.last_name}`.trim(), role: d.doctor_level || 'Doctor', department: d.department?.department_name || '', status: d.active_status || 'Active', avatar: (d.first_name && d.last_name) ? d.first_name[0] + d.last_name[0] : d.first_name?.[0] || 'Dr' })));
+        setStaff(list.map((d: any) => ({
+          id: d.id, name: `${d.first_name} ${d.last_name}`.trim(),
+          role: d.doctor_level || 'Doctor',
+          department: d.department?.department_name || '',
+          status: d.active_status || 'Active',
+          avatar: (d.first_name && d.last_name) ? d.first_name[0] + d.last_name[0] : d.first_name?.[0] || 'Dr',
+          phone: d.phone,
+          email: d.email
+        })));
         setDepartments(deps.results || deps);
         setLevels(lvls.results || lvls);
         setStatuses(stats.results || stats);
@@ -134,7 +140,15 @@ const StaffPage: React.FC = () => {
       // refresh
       const docs = await api.fetchDoctors();
       const list = docs.results || docs;
-      setStaff(list.map((d: any) => ({ id: d.id, name: `${d.first_name} ${d.last_name}`.trim(), role: d.doctor_level || 'Doctor', department: d.department?.department_name || '', status: d.active_status || 'Active', avatar: (d.first_name && d.last_name) ? d.first_name[0] + d.last_name[0] : d.first_name?.[0] || 'Dr' })));
+      setStaff(list.map((d: any) => ({
+        id: d.id, name: `${d.first_name} ${d.last_name}`.trim(),
+        role: d.doctor_level || 'Doctor',
+        department: d.department?.department_name || '',
+        status: d.active_status || 'Active',
+        avatar: (d.first_name && d.last_name) ? d.first_name[0] + d.last_name[0] : d.first_name?.[0] || 'Dr',
+        phone: d.phone,
+        email: d.email
+      })));
       handleCloseAdd();
       showSuccess('Staff member created successfully');
     } catch (err:any) {
@@ -225,8 +239,8 @@ const StaffPage: React.FC = () => {
         department: d.department?.department_name || '',
         status: d.active_status || 'Active',
         avatar: (d.first_name && d.last_name) ? d.first_name[0] + d.last_name[0] : d.first_name?.[0] || 'Dr',
-        phone: d.phone || 'None',
-        email: d.email || 'None'
+        phone: d.phone,
+        email: d.email
       })));
 
       handleCloseEdit();
@@ -274,7 +288,7 @@ const StaffPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {staff.map((person) => (
+        {staff.map((person: Staff) => (
           <div key={person.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col items-center text-center relative hover:shadow-md transition-shadow">
             <div className="absolute top-4 right-4 flex gap-1">
               <button
@@ -309,12 +323,17 @@ const StaffPage: React.FC = () => {
             </div>
 
             <div className="flex gap-2 w-full mt-auto">
+              <a id="link" href={`mailto:${person.email}`} className="flex-1 flex items-center">
               <button className="flex-1 flex items-center justify-center gap-2 py-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 text-sm transition-colors">
-                <Mail className="w-4 h-4" /> Message
+                <Mail className="w-4 h-4" /> {person.email}
               </button>
+              </a>
+              
+              <a id="link" href={`tel:${person.phone}`} className="flex-1 flex items-center">
               <button className="flex-1 flex items-center justify-center gap-2 py-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 text-sm transition-colors">
-                <Phone className="w-4 h-4" /> Call
+                <Phone className="w-4 h-4" /> {person.phone}
               </button>
+              </a>
             </div>
           </div>
         ))}
