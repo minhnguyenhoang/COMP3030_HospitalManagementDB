@@ -4,7 +4,7 @@ import { Mail, Phone, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { showSuccess, showError } from '../src/utils/toast';
 
 const StaffPage: React.FC = () => {
-  const [staff, setStaff] = React.useState<Staff>([]);
+  const [staff, setStaff] = React.useState<Staff[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [showAdd, setShowAdd] = React.useState(false);
   const [showEdit, setShowEdit] = React.useState(false);
@@ -38,10 +38,11 @@ const StaffPage: React.FC = () => {
         const list = docs.results || docs;
         if (!mounted) return;
         setStaff(list.map((d: any) => ({
-          id: d.id, name: `${d.first_name} ${d.last_name}`.trim(),
-          role: d.doctor_level || 'Doctor',
-          department: d.department?.department_name || '',
-          status: d.active_status,
+          id: d.id,
+          name: `${d.first_name} ${d.last_name}`.trim(),
+          role: d.doctor_level_title,
+          department: d.department_name || '',
+          status: d.active_status_name,
           avatar: (d.first_name && d.last_name) ? d.first_name[0] + d.last_name[0] : d.first_name?.[0] || 'Dr',
           phone: d.phone,
           email: d.email
@@ -141,10 +142,11 @@ const StaffPage: React.FC = () => {
       const docs = await api.fetchDoctors();
       const list = docs.results || docs;
       setStaff(list.map((d: any) => ({
-        id: d.id, name: `${d.first_name} ${d.last_name}`.trim(),
-        role: d.doctor_level || 'Doctor',
-        department: d.department?.department_name || '',
-        status: d.active_status,
+        id: d.id,
+        name: `${d.first_name} ${d.last_name}`.trim(),
+        role: d.doctor_level_title,
+        department: d.department_name || '',
+        status: d.active_status_name,
         avatar: (d.first_name && d.last_name) ? d.first_name[0] + d.last_name[0] : d.first_name?.[0] || 'Dr',
         phone: d.phone,
         email: d.email
@@ -235,9 +237,9 @@ const StaffPage: React.FC = () => {
       setStaff(list.map((d: any) => ({
         id: d.id,
         name: `${d.first_name} ${d.last_name}`.trim(),
-        role: d.doctor_level || 'Doctor',
-        department: d.department?.department_name || '',
-        status: d.active_status,
+        role: d.doctor_level_title,
+        department: d.department_name || '',
+        status: d.active_status_name,
         avatar: (d.first_name && d.last_name) ? d.first_name[0] + d.last_name[0] : d.first_name?.[0] || 'Dr',
         phone: d.phone,
         email: d.email
@@ -318,7 +320,7 @@ const StaffPage: React.FC = () => {
             
             <div className={`px-3 py-1 rounded-full text-xs font-bold mb-6
               ${person.status === 'Active' ? 'bg-green-100 text-green-700' : 
-                person.status === 'On Leave' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-600'}`}>
+                person.status === 'On-Demand' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-600'}`}>
               {person.status}
             </div>
 
