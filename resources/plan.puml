@@ -55,8 +55,8 @@ class PatientEmergencyContact {
 
 class Appointments {
     +AppointmentID: integer
-    +PatientID: integer
-    +DoctorID: integer
+    *PatientID: integer
+    *DoctorID: integer
     VisitDate: date
     Diagnosis: varchar
     Category: integer
@@ -122,12 +122,6 @@ class Department {
     *HeadOfDepartment: integer
 }
 
-class PrescriptionHistory {
-    +AppointmentID: integer
-    +MedicineID: integer
-    Amount: integer
-}
-
 class Medicine {
     +MedicineID: integer
     MedicineName: varchar
@@ -138,7 +132,8 @@ class Medicine {
 }
 
 class MedicineStockHistory {
-    +MedicineID: integer
+    +StockID: integer
+    *MedicineID: integer
     AddRemove: bit
     Amount: integer
     *AppointmentID: varchar
@@ -201,18 +196,18 @@ enum Type_MedicineAdministration {
     19: Implant
 }
 
-Patient -> PatientEmergencyContact
-Patient -> Appointments
-Patient -> PatientCoreMedicalInformation
-Patient -> PatientPersonalInformation
-PatientCoreMedicalInformation <- Type_CoreMedInfo
-Doctor <- Type_DoctorActiveStatus
-Doctor <- Type_DoctorLevel
-Doctor -> Appointments
-Department -> Doctor
-Medicine <- Type_MedicineFunction
-Medicine <- Type_MedicineAdministration
-Medicine -> PrescriptionHistory
-Medicine -> MedicineStockHistory
-Appointments -> PrescriptionHistory
+Type_DoctorActiveStatus --> Doctor
+Type_DoctorLevel --> Doctor
+Doctor --> Appointments
+Appointments --> MedicineStockHistory
+MedicineStockHistory <-- Medicine
+Department --> Doctor
+Medicine <-- Type_MedicineFunction
+Medicine <-- Type_MedicineAdministration
+
+Patient --> PatientCoreMedicalInformation
+PatientCoreMedicalInformation <-- Type_CoreMedInfo
+Patient --> PatientEmergencyContact
+Patient --> Appointments
+Patient --> PatientPersonalInformation
 @enduml
