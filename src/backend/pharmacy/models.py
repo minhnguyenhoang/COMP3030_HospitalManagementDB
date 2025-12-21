@@ -63,6 +63,6 @@ class MedicineStockHistory(models.Model):
 
     class Meta:
         db_table = 'MedicineStockHistory'
-        ordering = ['id']  # Oldest first (initial stock first)
+        ordering = ['-id']  # Newest first (latest stock first)
         verbose_name = 'Medicine Stock History'
         verbose_name_plural = 'Medicine Stock History'
