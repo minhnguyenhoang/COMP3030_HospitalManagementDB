@@ -330,6 +330,12 @@ const Appointments: React.FC<AppointmentsProps> = ({ role }) => {
                     placeholder="Enter phone number..."
                     value={phoneSearch}
                     onChange={(e) => setPhoneSearch(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSearchPatient();
+                      }
+                    }}
                     className="flex-1 p-2.5 bg-white border border-slate-200 rounded-lg text-sm"
                   />
                   <button
@@ -626,7 +632,13 @@ const Appointments: React.FC<AppointmentsProps> = ({ role }) => {
                           const api = await import('../src/api');
                           const appt = await api.createAppointment({ patient: selectedPatient, doctor: doctors[0]?.id, visit_date: new Date().toISOString().slice(0,10), note: notes, diagnosis: diagnosis });
                           for (const med of medications) {
-                            await api.createPrescription({ appointment_id: appt.id, visit_date: appt.visit_date, medicine: med.medicineId, amount: med.amount });
+                            await api.createMedicineStock({
+                              medicine_id: med.medicineId,
+                              add_remove: false,
+                              amount: med.amount,
+                              appointment: appt.id,
+                              note: 'Prescription'
+                            });
                           }
                           showSuccess('Consultation finalized');
                           setMedications([]);

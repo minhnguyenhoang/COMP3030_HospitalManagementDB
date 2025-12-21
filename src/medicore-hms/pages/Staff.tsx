@@ -350,17 +350,19 @@ const StaffPage: React.FC = () => {
               {person.status}
             </div>
 
-            <div className="flex gap-2 w-full mt-auto">
-              <a id="link" href={`mailto:${person.email}`} className="flex-1 flex items-center">
-              <button className="flex-1 flex items-center justify-center gap-2 py-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 text-sm transition-colors">
-                <Mail className="w-4 h-4" /> {person.email}
-              </button>
+            <div className="flex flex-col gap-2 w-full mt-auto">
+              <a href={`mailto:${person.email}`} className="w-full">
+                <button className="w-full flex items-center justify-start gap-2 py-2 px-3 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 text-sm transition-colors">
+                  <Mail className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{person.email}</span>
+                </button>
               </a>
-              
-              <a id="link" href={`tel:${person.phone}`} className="flex-1 flex items-center">
-              <button className="flex-1 flex items-center justify-center gap-2 py-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 text-sm transition-colors">
-                <Phone className="w-4 h-4" /> {person.phone}
-              </button>
+
+              <a href={`tel:${person.phone}`} className="w-full">
+                <button className="w-full flex items-center justify-start gap-2 py-2 px-3 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 text-sm transition-colors">
+                  <Phone className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{person.phone}</span>
+                </button>
               </a>
             </div>
           </div>

@@ -52,12 +52,10 @@ const Sidebar: React.FC<SidebarProps> = ({ role, onLogout }) => {
           Appointments
         </NavLink>
 
-        {role !== UserRole.RECEPTIONIST && (
-          <NavLink to="/staff" className={linkClass}>
-            <Stethoscope className="w-5 h-5" />
-            Staff & Departments
-          </NavLink>
-        )}
+        <NavLink to="/staff" className={linkClass}>
+          <Stethoscope className="w-5 h-5" />
+          Staff & Departments
+        </NavLink>
 
         <NavLink to="/inventory" className={linkClass}>
           <Pill className="w-5 h-5" />

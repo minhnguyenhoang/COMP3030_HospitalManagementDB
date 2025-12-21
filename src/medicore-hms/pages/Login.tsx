@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { UserRole } from '../types';
-import { Activity, Lock, Mail, ChevronDown } from 'lucide-react';
+import { Activity, Lock, Mail } from 'lucide-react';
 
 interface LoginProps {
-  onLogin: (role: UserRole, UserEmail) => void;
+  onLogin: (role: UserRole, UserEmail: string) => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
-  const [role, setRole] = useState<UserRole>(UserRole.DOCTOR);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -19,11 +18,17 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       setError(null);
       setLoading(true);
       const api = await import('../src/api');
-      await api.login(email, password);
-      onLogin(role, email);
+      const response = await api.login(email, password);
+
+      // Get role from backend response
+      if (response.role) {
+        onLogin(response.role as UserRole, response.email || email);
+      } else {
+        throw new Error('Role not found in response');
+      }
     } catch (err: any) {
       console.error('Login error', err);
-      setError(err.message || 'Login failed — check network or backend CORS');
+      setError(err.message || 'Login failed — check credentials or backend connection');
     } finally {
       setLoading(false);
     }
@@ -41,22 +46,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
       <div className="bg-white p-8 rounded-2xl shadow-xl border border-slate-100 w-full max-w-md">
         <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Select Role (Demo)</label>
-            <div className="relative">
-              <select 
-                value={role}
-                onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full pl-4 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none outline-none transition-all"
-              >
-                <option value={UserRole.ADMIN}>Administrator</option>
-                <option value={UserRole.DOCTOR}>Doctor</option>
-                <option value={UserRole.RECEPTIONIST}>Receptionist</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-3.5 w-5 h-5 text-slate-400 pointer-events-none" />
-            </div>
-          </div>
-
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">Email or Username</label>
             <div className="relative">

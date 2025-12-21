@@ -10,7 +10,7 @@ import Appointments from './pages/Appointments';
 import StaffPage from './pages/Staff';
 import Inventory from './pages/Inventory';
 import { UserRole } from './types';
-import { Bell, Search } from 'lucide-react';
+import { Bell } from 'lucide-react';
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -92,18 +92,7 @@ const App: React.FC = () => {
         <div className="flex-1 flex flex-col">
           {/* Top Header */}
           <header className="bg-white border-b border-slate-200 h-16 px-8 flex items-center justify-between sticky top-0 z-10 shadow-sm">
-            <div className="flex items-center gap-4 flex-1">
-              <div className="relative w-96 hidden md:block">
-                <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
-                <input 
-                  type="text" 
-                  placeholder="Quick search..." 
-                  className="w-full pl-9 pr-4 py-2 bg-slate-100 border-transparent rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                />
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-6 ml-auto">
               <div className="relative notification-dropdown">
                 <button
                   onClick={() => setShowNotifications(!showNotifications)}
@@ -169,10 +158,10 @@ const App: React.FC = () => {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/patients" element={<Patients />} />
-              <Route path="/patients/:id" element={<PatientProfile />} />
+              <Route path="/patients/:id" element={<PatientProfile role={role} />} />
               <Route path="/appointments" element={<Appointments role={role} />} />
-              <Route path="/staff" element={role !== UserRole.RECEPTIONIST ? <StaffPage /> : <Navigate to="/" />} />
-              <Route path="/inventory" element={<Inventory />} />
+              <Route path="/staff" element={<StaffPage />} />
+              <Route path="/inventory" element={<Inventory role={role} />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </main>
