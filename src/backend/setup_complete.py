@@ -51,9 +51,9 @@ def setup_database():
         return False
 
     # Get SQL files directory
-    backend_dir = os.path.dirname(os.path.abspath(__file__))
+    backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     project_root = os.path.dirname(backend_dir)
-    sql_dir = os.path.join(project_root, 'src', 'sql2')
+    sql_dir = os.path.join(project_root, 'src', 'sql')
 
     # SQL files in order
     sql_files = [
@@ -202,6 +202,7 @@ def verify_setup():
 
 
 def main():
+    verification_success = True
     """Main setup function"""
     print("\nThis script will:")
     print("  1. Create MySQL database from SQL scripts")
@@ -221,17 +222,19 @@ def main():
     # Step 3: Verification
     if not verify_setup():
         print("\n⚠ Setup completed but verification had issues")
+        verification_success = False
 
     # Success message
-    print("\n" + "="*70)
-    print("✓ SETUP COMPLETED SUCCESSFULLY!")
-    print("="*70)
-    print("\nNext steps:")
-    print("  1. Create superuser:  python manage.py createsuperuser")
-    print("  2. Start server:      python manage.py runserver")
-    print("  3. Access frontend:   http://localhost:3000")
-    print("  4. Access admin:      http://localhost:8000/admin")
-    print()
+    if verification_success:
+        print("\n" + "="*70)
+        print("✓ SETUP COMPLETED SUCCESSFULLY!")
+        print("="*70)
+        print("\nNext steps:")
+        print("  1. Create superuser:  python manage.py createsuperuser")
+        print("  2. Start server:      python manage.py runserver")
+        print("  3. Access frontend:   http://localhost:3000")
+        print("  4. Access admin:      http://localhost:8000/admin")
+        print()
 
 
 if __name__ == '__main__':

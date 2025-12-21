@@ -123,7 +123,7 @@ COMP3030_HospitalManagementDB/
 ├── medicore-hms/                   # React frontend
 │   ├── pages/                      # Page components
 │   └── src/api/                    # API calls
-└── src/sql2/                       # MySQL schema files
+└── src/sql/                       # MySQL schema files
     ├── 01_schema_creation.sql
     ├── 02_insert_lookup_data.sql
     ├── 03_procedures_triggers_views.sql
