@@ -1,63 +1,104 @@
--- FILE: 02_insert_lookup_and_sample_data.sql
--- PURPOSE: Populate Enum tables AND insert dummy data for testing
+-- FILE: 02_insert_lookup_data.sql
+-- PURPOSE: Populate lookup tables with reference data
+-- NOTE: Django will auto-generate IDs starting from 1, so we let AUTO_INCREMENT handle it
 
 USE HospitalDB;
 
 -- ==========================================
--- 1. POPULATE LOOKUP TABLES (Enums)
+-- 1. POPULATE LOOKUP TABLES
 -- ==========================================
 
--- Type_CoreMedInfo
-INSERT IGNORE INTO Type_CoreMedInfo VALUES 
-(0, 'Allergies'), (1, 'Priority/Treatment Status'), (2, 'Medical Condition'),
-(3, 'Genetic Condition'), (4, 'Substance Use'), (5, 'Lifestyle Information'),
-(6, 'Dietary Information'), (7, 'Other');
+-- Type_CoreMedInfo (information types for patient medical info)
+INSERT INTO Type_CoreMedInfo (name) VALUES
+('Allergies'),
+('Priority/Treatment Status'),
+('Medical Condition'),
+('Genetic Condition'),
+('Substance Use'),
+('Lifestyle Information'),
+('Dietary Information'),
+('Other');
 
--- Type_MedicineFunction
-INSERT IGNORE INTO Type_MedicineFunction VALUES 
-(0, 'Analgesic'), (1, 'Antibiotic'), (2, 'Antifungal'), (3, 'Antihistamine'),
-(4, 'Antipyretic'), (5, 'Antiviral'), (6, 'Anticoagulant'), (7, 'Antidepressant'),
-(8, 'Antineoplastic'), (9, 'Antipsychotic'), (10, 'Bronchodilator'), (11, 'Corticosteroid'),
-(12, 'Mood Stabiliser'), (13, 'Statin'), (14, 'Antacid'), (15, 'Proton Pump Inhibitor'),
-(16, 'H2 receptor antagonist'), (17, 'Antiemetic'), (18, 'Anticonvulsant'), (19, 'Diuretic'),
-(20, 'Beta Blocker'), (21, 'Calcium Channel Blocker'), (22, 'ACE Inhibitor'), (23, 'Antidiabetic'),
-(24, 'Thyroid Hormones'), (25, 'Hormonal Contraceptive'), (26, 'Sedative'), (27, 'Stimulant'),
-(28, 'Immunosuppressant'), (29, 'Vaccine');
+-- Type_MedicineFunction (medicine categories/purposes)
+INSERT INTO Type_MedicineFunction (name) VALUES
+('Analgesic'),
+('Antibiotic'),
+('Antifungal'),
+('Antihistamine'),
+('Antipyretic'),
+('Antiviral'),
+('Anticoagulant'),
+('Antidepressant'),
+('Antineoplastic'),
+('Antipsychotic'),
+('Bronchodilator'),
+('Corticosteroid'),
+('Mood Stabiliser'),
+('Statin'),
+('Antacid'),
+('Proton Pump Inhibitor'),
+('H2 receptor antagonist'),
+('Antiemetic'),
+('Anticonvulsant'),
+('Diuretic'),
+('Beta Blocker'),
+('Calcium Channel Blocker'),
+('ACE Inhibitor'),
+('Antidiabetic'),
+('Thyroid Hormones'),
+('Hormonal Contraceptive'),
+('Sedative'),
+('Stimulant'),
+('Immunosuppressant'),
+('Vaccine');
 
--- Type_MedicineAdministration
-INSERT IGNORE INTO Type_MedicineAdministration VALUES 
-(0, 'Oral'), (1, 'Sublingual'), (2, 'Buccal'), (3, 'Topical'), (4, 'Ophthalmic'),
-(5, 'Otic'), (6, 'Nasal'), (7, 'Suppositories'), (8, 'Transdermal'), (9, 'Inhalers'),
-(10, 'Nebulised'), (11, 'Intramuscular'), (12, 'Subcutaneous'), (13, 'Intravenous'),
-(14, 'Intradermal'), (15, 'Intrathecal'), (16, 'Epidural'), (17, 'Intraarticular'),
-(18, 'Intraosseous'), (19, 'Implant');
+-- Type_MedicineAdministration (how medicine is administered)
+INSERT INTO Type_MedicineAdministration (name) VALUES
+('Oral'),
+('Sublingual'),
+('Buccal'),
+('Topical'),
+('Ophthalmic'),
+('Otic'),
+('Nasal'),
+('Suppositories'),
+('Transdermal'),
+('Inhalers'),
+('Nebulised'),
+('Intramuscular'),
+('Subcutaneous'),
+('Intravenous'),
+('Intradermal'),
+('Intrathecal'),
+('Epidural'),
+('Intraarticular'),
+('Intraosseous'),
+('Implant');
 
--- Type_DoctorLevel
-INSERT IGNORE INTO Type_DoctorLevel VALUES 
-(0, 'Medical Student'), (1, 'Intern'), (2, 'Junior Resident'), (3, 'Senior Resident'),
-(4, 'Chief Resident'), (5, 'Fellow'), (6, 'Attending Physician'), (7, 'Head of Department'),
-(8, 'Medical Director');
+-- Type_DoctorLevel (doctor ranks/positions)
+INSERT INTO Type_DoctorLevel (title) VALUES
+('Medical Student'),
+('Intern'),
+('Junior Resident'),
+('Senior Resident'),
+('Chief Resident'),
+('Fellow'),
+('Attending Physician'),
+('Head of Department'),
+('Medical Director');
 
--- Type_DoctorActiveStatus
-INSERT IGNORE INTO Type_DoctorActiveStatus VALUES 
-(0, 'Inactive'), (1, 'Off-duty'), (2, 'On-demand'), (3, 'Active');
+-- Type_DoctorActiveStatus (doctor availability status)
+INSERT INTO Type_DoctorActiveStatus (status_name) VALUES
+('Inactive'),
+('Off-duty'),
+('On-Demand'),
+('Active');
 
 -- ==========================================
--- 2. INSERT SAMPLE DATA (So your views are not empty)
+-- NOTES:
 -- ==========================================
-
--- Create a Department
-INSERT INTO Department (DepartmentName, Description) 
-VALUES ('Cardiology', 'Heart and Vascular health');
-
--- Create a Doctor (ID: 1, Active, Attending Physician)
-INSERT INTO Doctor (DepartmentID, DoctorLevel, ActiveStatus, FirstName, LastName, Gender, MedicalLicenseID, DOB, Phone, Email, NationalID, Expertise)
-VALUES (1, 6, 3, 'John', 'Doe', 'Male', 'LIC-99999', '1980-01-01', '555-0199', 'dr.doe@hospital.com', 'N0000001', 'Surgeon');
-
--- Create a Patient (ID: 1)
-INSERT INTO Patient (FirstName, LastName, DOB, Gender, BiologicalSex, Phone, Email, FirstVisitDate, LastVisitDate)
-VALUES ('Jane', 'Smith', '1995-05-20', 'Female', 'Female', '555-0100', 'jane.smith@email.com', '2025-01-01', '2025-01-01');
-
--- Create a Medicine (ID: 1)
-INSERT INTO Medicine (MedicineName, Producer, MedicineType, MedicineAdministrationMethod, MedicineUnit)
-VALUES ('Ibuprofen', 'PharmaInc', 0, 0, 'mg');
+-- 1. We use INSERT without specifying ID values to let AUTO_INCREMENT handle them
+-- 2. IDs will start from 1 and increment automatically
+-- 3. Django code should reference these by status_name/name, not hardcoded IDs
+-- 4. Example: Doctor.active_status.status_name in ('On-Demand', 'Active')
+-- 5. This approach is safer than hardcoded ID checks like "status_id IN (2,3)"

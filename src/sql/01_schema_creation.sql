@@ -1,184 +1,207 @@
 -- FILE: 01_schema_creation.sql
--- PURPOSE: Create tables, relationships, and partitioning
--- FIXED: Removed FKs from partitioned tables to resolve Error 1506
+-- PURPOSE: Create tables matching Django models exactly
+-- MAPPING: Table names use PascalCase (db_table), columns use snake_case lowercase
 
 DROP DATABASE IF EXISTS HospitalDB;
-CREATE DATABASE HospitalDB;
+CREATE DATABASE HospitalDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE HospitalDB;
 
 -- ==========================================
--- 1. LOOKUP TABLES (ENUMS)
+-- 1. LOOKUP TABLES
 -- ==========================================
-CREATE TABLE Type_CoreMedInfo (ID INT PRIMARY KEY, Name VARCHAR(50));
-CREATE TABLE Type_MedicineFunction (ID INT PRIMARY KEY, Name VARCHAR(50));
-CREATE TABLE Type_MedicineAdministration (ID INT PRIMARY KEY, Name VARCHAR(50));
-CREATE TABLE Type_DoctorLevel (ID INT PRIMARY KEY, Title VARCHAR(50));
-CREATE TABLE Type_DoctorActiveStatus (ID INT PRIMARY KEY, StatusName VARCHAR(50));
+
+-- Type_CoreMedInfo (pharmacy.TypeCoreMedInfo)
+CREATE TABLE Type_CoreMedInfo (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+) ENGINE=InnoDB;
+
+-- Type_MedicineFunction (pharmacy.TypeMedicineFunction)
+CREATE TABLE Type_MedicineFunction (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+) ENGINE=InnoDB;
+
+-- Type_MedicineAdministration (pharmacy.TypeMedicineAdministration)
+CREATE TABLE Type_MedicineAdministration (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+) ENGINE=InnoDB;
+
+-- Type_DoctorLevel (doctors.DoctorLevel)
+CREATE TABLE Type_DoctorLevel (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(50) NOT NULL
+) ENGINE=InnoDB;
+
+-- Type_DoctorActiveStatus (doctors.DoctorActiveStatus)
+CREATE TABLE Type_DoctorActiveStatus (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    status_name VARCHAR(50) NOT NULL
+) ENGINE=InnoDB;
 
 -- ==========================================
 -- 2. MAIN ENTITIES
 -- ==========================================
 
--- Department
+-- Department (doctors.Department)
 CREATE TABLE Department (
-    DepartmentID INT AUTO_INCREMENT PRIMARY KEY,
-    DepartmentName VARCHAR(100) NOT NULL,
-    Description VARCHAR(255),
-    HeadOfDepartment INT
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    department_name VARCHAR(100) NOT NULL,
+    description VARCHAR(255) NULL,
+    head_of_department_id INT NULL
+) ENGINE=InnoDB;
 
--- Doctor
+-- Doctor (doctors.Doctor)
 CREATE TABLE Doctor (
-    DoctorID INT AUTO_INCREMENT PRIMARY KEY,
-    DepartmentID INT NOT NULL,
-    MedicalLicenseID VARCHAR(50),
-    DOB DATE NOT NULL,
-    FirstName VARCHAR(50) NOT NULL,
-    MiddleName VARCHAR(50),
-    LastName VARCHAR(50),
-    Gender VARCHAR(20) NOT NULL,
-    NationalID VARCHAR(20) NOT NULL,
-    Phone VARCHAR(20),
-    Email VARCHAR(100),
-    Address VARCHAR(255),
-    Expertise VARCHAR(100) NOT NULL,
-    DoctorLevel INT NOT NULL,
-    ActiveStatus INT NOT NULL,
-    FOREIGN KEY (DepartmentID) REFERENCES Department(DepartmentID),
-    FOREIGN KEY (DoctorLevel) REFERENCES Type_DoctorLevel(ID),
-    FOREIGN KEY (ActiveStatus) REFERENCES Type_DoctorActiveStatus(ID)
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    department_id INT NOT NULL,
+    medical_license_id VARCHAR(50) NULL,
+    dob DATE NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    middle_name VARCHAR(50) NULL,
+    last_name VARCHAR(50) NULL,
+    gender VARCHAR(20) NOT NULL,
+    national_id VARCHAR(20) NOT NULL UNIQUE,
+    phone VARCHAR(20) NULL,
+    email VARCHAR(100) NULL,
+    address VARCHAR(255) NULL,
+    expertise VARCHAR(100) NOT NULL,
+    doctor_level_id INT NOT NULL,
+    active_status_id INT NOT NULL,
+    INDEX idx_doctor_license (medical_license_id),
+    FOREIGN KEY (department_id) REFERENCES Department(id) ON DELETE RESTRICT,
+    FOREIGN KEY (doctor_level_id) REFERENCES Type_DoctorLevel(id) ON DELETE RESTRICT,
+    FOREIGN KEY (active_status_id) REFERENCES Type_DoctorActiveStatus(id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
 
--- Fix Circular Dependency
+-- Add Foreign Key to Department for head_of_department (circular dependency)
 ALTER TABLE Department
 ADD CONSTRAINT fk_dept_head
-FOREIGN KEY (HeadOfDepartment) REFERENCES Doctor(DoctorID);
+FOREIGN KEY (head_of_department_id) REFERENCES Doctor(id) ON DELETE SET NULL;
 
--- Patient
+-- Patient (patients.Patient)
 CREATE TABLE Patient (
-    PatientID INT AUTO_INCREMENT PRIMARY KEY,
-    FirstName VARCHAR(50) NOT NULL,
-    MiddleName VARCHAR(50),
-    LastName VARCHAR(50),
-    DOB DATE NOT NULL,
-    Ethnicity VARCHAR(50),
-    PreferredLanguage VARCHAR(50),
-    Gender VARCHAR(20) NOT NULL,
-    BiologicalSex VARCHAR(20) NOT NULL,
-    Phone VARCHAR(20),
-    Email VARCHAR(100),
-    FirstVisitDate DATE NOT NULL,
-    LastVisitDate DATE NOT NULL,
-    InsuranceID VARCHAR(50),
-    InsuranceProvider VARCHAR(100),
-    BloodType INT,
-    Height INT,
-    Weight INT,
-    DNRStatus BIT(1),
-    OrganDonorStatus BIT(1)
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    middle_name VARCHAR(50) NULL,
+    last_name VARCHAR(50) NOT NULL,
+    dob DATE NOT NULL,
+    ethnicity VARCHAR(50) NULL,
+    preferred_language VARCHAR(50) NULL,
+    gender VARCHAR(20) NOT NULL,
+    biological_sex VARCHAR(20) NOT NULL,
+    phone VARCHAR(20) NULL,
+    email VARCHAR(100) NULL,
+    first_visit_date DATE NOT NULL,
+    last_visit_date DATE NOT NULL,
+    insurance_id VARCHAR(50) NULL,
+    insurance_provider VARCHAR(100) NULL,
+    blood_type VARCHAR(10) NULL,
+    height INT NULL,
+    weight INT NULL,
+    dnr_status TINYINT(1) NOT NULL DEFAULT 0,
+    organ_donor_status TINYINT(1) NOT NULL DEFAULT 0,
+    INDEX idx_patient_lastname (last_name)
+) ENGINE=InnoDB;
 
--- Patient Personal Info
+-- PatientPersonalInformation (patients.PatientPersonalInformation)
 CREATE TABLE PatientPersonalInformation (
-    PatientID INT PRIMARY KEY,
-    Occupation VARCHAR(100),
-    NatID VARCHAR(50),
-    PassportNo VARCHAR(50),
-    DriversLicenseNo VARCHAR(50),
-    Address VARCHAR(255),
-    City VARCHAR(100),
-    State VARCHAR(100),
-    Country VARCHAR(100),
-    FOREIGN KEY (PatientID) REFERENCES Patient(PatientID) ON DELETE CASCADE
-);
+    patient_id INT PRIMARY KEY,
+    occupation VARCHAR(100) NULL,
+    nat_id VARCHAR(50) NULL,
+    passport_no VARCHAR(50) NULL,
+    drivers_license_no VARCHAR(50) NULL,
+    address VARCHAR(255) NULL,
+    city VARCHAR(100) NULL,
+    state VARCHAR(100) NULL,
+    country VARCHAR(100) NULL,
+    FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
--- Patient Core Medical Info
+-- PatientCoreMedicalInformation (patients.PatientCoreMedicalInformation)
 CREATE TABLE PatientCoreMedicalInformation (
-    ID INT AUTO_INCREMENT PRIMARY KEY,
-    PatientID INT,
-    InformationType INT,
-    Note VARCHAR(255),
-    FOREIGN KEY (PatientID) REFERENCES Patient(PatientID),
-    FOREIGN KEY (InformationType) REFERENCES Type_CoreMedInfo(ID)
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    information_type INT NOT NULL,
+    note VARCHAR(255) NULL,
+    FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
--- Patient Emergency Contact
+-- PatientEmergencyContact (patients.PatientEmergencyContact)
 CREATE TABLE PatientEmergencyContact (
-    ContactID INT AUTO_INCREMENT PRIMARY KEY,
-    PatientID INT,
-    ContactType VARCHAR(50) NOT NULL,
-    ContactInformation VARCHAR(255),
-    Relationship VARCHAR(50) NOT NULL,
-    LastUpdated DATE NOT NULL,
-    FOREIGN KEY (PatientID) REFERENCES Patient(PatientID)
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    contact_type VARCHAR(50) NOT NULL,
+    contact_information VARCHAR(255) NOT NULL,
+    relationship VARCHAR(50) NOT NULL,
+    last_updated DATE NOT NULL,
+    FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
 
--- Medicine
+-- Medicine (pharmacy.Medicine)
 CREATE TABLE Medicine (
-    MedicineID INT AUTO_INCREMENT PRIMARY KEY,
-    MedicineName VARCHAR(100) NOT NULL,
-    Producer VARCHAR(100),
-    MedicineType INT NOT NULL,
-    MedicineAdministrationMethod INT NOT NULL,
-    MedicineUnit VARCHAR(20) NOT NULL,
-    FOREIGN KEY (MedicineType) REFERENCES Type_MedicineFunction(ID),
-    FOREIGN KEY (MedicineAdministrationMethod) REFERENCES Type_MedicineAdministration(ID)
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    medicine_name VARCHAR(100) NOT NULL,
+    producer VARCHAR(100) NULL,
+    medicine_type_id INT NULL,
+    medicine_administration_method_id INT NULL,
+    medicine_unit VARCHAR(20) NOT NULL,
+    FOREIGN KEY (medicine_type_id) REFERENCES Type_MedicineFunction(id) ON DELETE RESTRICT,
+    FOREIGN KEY (medicine_administration_method_id) REFERENCES Type_MedicineAdministration(id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
 
--- ==========================================
--- 3. PARTITIONED TABLES (FIXED)
--- ==========================================
-
--- Appointments
--- FIX: Removed FOREIGN KEYS to Patient/Doctor because MySQL forbids them in Partitioned tables.
--- We added Manual Indexes below instead.
+-- Appointments (appointments.Appointment)
 CREATE TABLE Appointments (
-    AppointmentID INT AUTO_INCREMENT,
-    PatientID INT NOT NULL,
-    DoctorID INT NOT NULL,
-    VisitDate DATE NOT NULL,
-    Diagnosis VARCHAR(255),
-    Category VARCHAR(50),
-    Note VARCHAR(255),
-    PRIMARY KEY (AppointmentID, VisitDate),
-    FOREIGN KEY (PatientID) REFERENCES Patient(PatientID),
-    FOREIGN KEY (DoctorID) REFERENCES Doctor(DoctorID)
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    doctor_id INT NOT NULL,
+    visit_date DATETIME NOT NULL,
+    diagnosis VARCHAR(255) NULL,
+    category VARCHAR(50) NULL,
+    note VARCHAR(255) NULL,
+    INDEX idx_appt_patient (patient_id),
+    INDEX idx_appt_doctor (doctor_id),
+    FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE RESTRICT,
+    FOREIGN KEY (doctor_id) REFERENCES Doctor(id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
 
--- Manual Indexes for Appointments (since FKs were removed)
-CREATE INDEX idx_appt_patient ON Appointments(PatientID);
-CREATE INDEX idx_appt_doctor ON Appointments(DoctorID);
-
--- Prescription History
--- FIX: Cannot FK to 'Appointments' because 'Appointments' is partitioned.
+-- PrescriptionHistory (pharmacy.PrescriptionHistory)
 CREATE TABLE PrescriptionHistory (
-    HistoryID INT AUTO_INCREMENT PRIMARY KEY,
-    AppointmentID INT NOT NULL,
-	MedicineID INT NOT NULL,
-    PrescriptionDate DATE,
-    Amount INT,
-    FOREIGN KEY (MedicineID) REFERENCES Medicine(MedicineID),
-    FOREIGN KEY (AppointmentID) REFERENCES Appointments(AppointmentID)
-);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    appointment_id INT NULL,
+    medicine_id INT NOT NULL,
+    prescription_date DATE NULL,
+    amount INT NOT NULL,
+    FOREIGN KEY (appointment_id) REFERENCES Appointments(id) ON DELETE CASCADE,
+    FOREIGN KEY (medicine_id) REFERENCES Medicine(id) ON DELETE RESTRICT
+) ENGINE=InnoDB;
 
--- Medicine Stock History
+-- MedicineStockHistory (pharmacy.MedicineStockHistory)
 CREATE TABLE MedicineStockHistory (
-    StockID INT AUTO_INCREMENT PRIMARY KEY,
-    MedicineID INT NOT NULL,
-    AddRemove BIT(1) NOT NULL,
-    Amount INT NOT NULL,
-    AppointmentID INT, 
-    Note VARCHAR(255),
-    FOREIGN KEY (MedicineID) REFERENCES Medicine(MedicineID),
-	FOREIGN KEY (AppointmentID) REFERENCES Appointments(AppointmentID)
-);
-
--- Adding constraints to Medicine Stock History
-ALTER TABLE MedicineStockHistory
-ADD CONSTRAINT CHK_AppointmentID CHECK (AppointmentID IS NOT NULL OR AddRemove = 1);
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    medicine_id INT NOT NULL,
+    add_remove TINYINT(1) NOT NULL,
+    amount INT NOT NULL,
+    appointment_id INT NULL,
+    note VARCHAR(255) NULL,
+    FOREIGN KEY (medicine_id) REFERENCES Medicine(id) ON DELETE CASCADE,
+    FOREIGN KEY (appointment_id) REFERENCES Appointments(id) ON DELETE SET NULL
+) ENGINE=InnoDB;
 
 -- ==========================================
--- 4. GENERAL INDEXING
+-- NOTES:
 -- ==========================================
-CREATE INDEX idx_patient_lastname ON Patient(LastName);
-CREATE INDEX idx_doctor_license ON Doctor(MedicalLicenseID);
+-- 1. All table names use PascalCase as defined in Django's db_table Meta option
+-- 2. All column names use lowercase snake_case as per Django conventions
+-- 3. Primary keys are 'id' (Django auto-generated) instead of TableNameID
+-- 4. Foreign keys use 'tablename_id' format (e.g., department_id, patient_id)
+-- 5. TINYINT(1) is used for BooleanField (dnr_status, organ_donor_status, add_remove)
+-- 6. DATETIME is used for DateTimeField (visit_date in Appointments)
+-- 7. NULL/NOT NULL constraints match Django's blank=True, null=True settings
+-- 8. UNIQUE constraints added where specified in Django models (national_id)
+-- 9. Indexes added to match Django's db_index and Meta.indexes settings
+-- 10. ON DELETE behaviors match Django's on_delete settings:
+--     - CASCADE: Delete related objects
+--     - PROTECT: Prevent deletion if referenced
+--     - SET NULL: Set to NULL when referenced object deleted
