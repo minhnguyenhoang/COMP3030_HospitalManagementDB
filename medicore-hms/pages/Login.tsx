@@ -3,7 +3,7 @@ import { UserRole } from '../types';
 import { Activity, Lock, Mail, ChevronDown } from 'lucide-react';
 
 interface LoginProps {
-  onLogin: (role: UserRole) => void;
+  onLogin: (role: UserRole, UserEmail) => void;
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
@@ -20,7 +20,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       setLoading(true);
       const api = await import('../src/api');
       await api.login(email, password);
-      onLogin(role);
+      onLogin(role, email);
     } catch (err: any) {
       console.error('Login error', err);
       setError(err.message || 'Login failed — check network or backend CORS');

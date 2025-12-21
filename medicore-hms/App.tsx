@@ -17,6 +17,7 @@ const App: React.FC = () => {
   const [role, setRole] = useState<UserRole>(UserRole.DOCTOR);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [email, setEmail] = useState('');
 
   // Fetch notifications on login
   React.useEffect(() => {
@@ -59,9 +60,10 @@ const App: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showNotifications]);
 
-  const handleLogin = (selectedRole: UserRole) => {
+  const handleLogin = (selectedRole: UserRole, UserEmail) => {
     setRole(selectedRole);
     setIsAuthenticated(true);
+    setEmail(UserEmail);
   };
 
   const handleLogout = async () => {
@@ -152,7 +154,7 @@ const App: React.FC = () => {
               
               <div className="flex items-center gap-3 pl-6 border-l border-slate-200">
                 <div className="text-right hidden sm:block">
-                  <p className="text-sm font-bold text-slate-800">Dr. Smith</p>
+                  <p className="text-sm font-bold text-slate-800">{email}</p>
                   <p className="text-xs text-slate-500 font-medium">{role}</p>
                 </div>
                 <div className="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md ring-2 ring-blue-100">
