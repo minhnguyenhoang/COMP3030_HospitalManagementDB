@@ -2,7 +2,7 @@
 
 ## Prerequisites
 - Python 3.8+
-- MySQL Server (running on port 3307 or configure in `.env`)
+- MySQL Server (running on port 3306 or configure in `.env`)
 - Node.js 16+ (for frontend)
 
 ## Quick Setup (3 Steps)
@@ -12,15 +12,19 @@
 cd backend
 pip install -r requirements.txt
 ```
-
-<!-- ### 2. Configure Database
-Edit `backend/.env` with your MySQL credentials:
+Or if you use `uv`, do `uv pip install -r -requirements.txt` and make sure that the corresponding (virtual) environment used with uv is enabled.
+### 2. Configure Database
+Run the file `test_mysql_connection.py` to setup the `.env` file and test the connection:
+```bash
+python test_mysql_connection.py
+```
+Alternatively, manually edit `backend/.env` with your MySQL credentials:
 ```env
 DB_USER=root
 DB_PASSWORD=your_password_here
 DB_HOST=localhost
-DB_PORT=3307
-``` -->
+DB_PORT=3306
+```
 
 ### 3. Run Complete Setup
 ```bash
@@ -37,7 +41,7 @@ This single script will:
 ```bash
 python manage.py createsuperuser
 
-Example: enter: admin and admin123 for the password
+# Example: enter: admin and admin123 for the password
 ```
 
 ### 5. Start Backend Server
@@ -45,9 +49,22 @@ Example: enter: admin and admin123 for the password
 python manage.py runserver
 ```
 
-Backend will run at: http://localhost:8000
+Backend will run at: http://localhost:8000. To access the login portal, go to http://localhost:3000.
 
 ### 6. Start Frontend (New Terminal)
+Install Node.js and `npm` on your system. On Windows and macOS, go to https://nodejs.org/en/download/. On Linux, use your appropriate package manager and install.
+## Debian-based
+```bash
+sudo apt update && sudo apt upgrade
+sudo apt install nodejs npm
+```
+## Arch-based
+```bash
+pacman -S nodejs npm
+```
+If you use `paru`, `yay` or similar package managers, you can substitute that for `pacman`.
+## Frontend intialisation
+Go to the `medicore-hms` folder, install `npm` and run the app `dev`.
 ```bash
 cd ../medicore-hms
 npm install
