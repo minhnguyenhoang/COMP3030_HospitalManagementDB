@@ -153,7 +153,7 @@ const Dashboard: React.FC = () => {
                 <BarChart data={dataDiseases} layout="vertical" margin={{ left: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                   <XAxis type="number" hide />
-                  <YAxis dataKey="name" type="category" width={60} tick={{fill: '#64748b', fontSize: 12}} />
+                  <YAxis dataKey="name" type="category" width={100} tick={{fill: '#64748b', fontSize: 12}} />
                   <Tooltip cursor={{fill: 'transparent'}} />
                   <Bar dataKey="count" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={20} />
                 </BarChart>
@@ -181,7 +181,6 @@ const Dashboard: React.FC = () => {
                 <th className="px-6 py-4">Doctor</th>
                 <th className="px-6 py-4">Time</th>
                 <th className="px-6 py-4">Type</th>
-                <th className="px-6 py-4">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -192,14 +191,6 @@ const Dashboard: React.FC = () => {
                     <td className="px-6 py-4 text-slate-600">{row.doctor?.first_name ? `Dr. ${row.doctor.first_name}` : `Dr.`}</td>
                     <td className="px-6 py-4 text-slate-600">{new Date(row.visit_date).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</td>
                     <td className="px-6 py-4 text-slate-600">{row.category || 'Consultation'}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold
-                        ${row.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                          row.status === 'In Progress' ? 'bg-blue-100 text-blue-700' :
-                          'bg-yellow-100 text-yellow-700'}`}>
-                        {row.status || 'Pending'}
-                      </span>
-                    </td>
                   </tr>
                 ))
               ) : (
