@@ -157,10 +157,10 @@ const App: React.FC = () => {
           <main className="p-8 flex-1 overflow-x-hidden">
             <Routes>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/patients" element={<Patients />} />
+              <Route path="/patients" element={<Patients role={role} />} />
               <Route path="/patients/:id" element={<PatientProfile role={role} />} />
               <Route path="/appointments" element={<Appointments role={role} />} />
-              <Route path="/staff" element={<StaffPage />} />
+              <Route path="/staff" element={<StaffPage role={role} />} />
               <Route path="/inventory" element={<Inventory role={role} />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

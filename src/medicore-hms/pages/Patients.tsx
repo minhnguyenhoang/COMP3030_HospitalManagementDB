@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Search, Filter, Plus, ChevronRight, Eye, Pencil, Trash2 } from 'lucide-react';
-import { Patient } from '../types';
+import { Patient, UserRole } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { showSuccess, showError } from '../src/utils/toast';
 
-const Patients: React.FC = () => {
+const Patients: React.FC<{ role?: UserRole }> = ({ role }) => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGender, setFilterGender] = useState('All');
@@ -540,14 +540,20 @@ const Patients: React.FC = () => {
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => handleDelete(patient.id)}
-                          className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"
-                          title="Delete Patient"
-                          disabled={loading}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {role === UserRole.ADMIN ? (
+                          <button
+                            onClick={() => handleDelete(patient.id)}
+                            className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                            title="Delete Patient"
+                            disabled={loading}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <div className="p-2" title="Only Admin can delete patients">
+                            <Trash2 className="w-4 h-4 text-slate-300 cursor-not-allowed" />
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>
