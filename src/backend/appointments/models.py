@@ -12,10 +12,9 @@ class Appointment(models.Model):
     class Meta:
         db_table = 'Appointments'
         ordering = ['-visit_date']  # Most recent first
-        indexes = [
-            models.Index(fields=['patient']),
-            models.Index(fields=['doctor']),
-        ]
+        indexes = [models.Index(fields=['patient']), models.Index(fields=['doctor'])]
+        verbose_name = 'Appointment'
+        verbose_name_plural = 'Appointments'
 
     def __str__(self):
         return f"Appt {self.id} - {self.patient} with Dr. {self.doctor}"

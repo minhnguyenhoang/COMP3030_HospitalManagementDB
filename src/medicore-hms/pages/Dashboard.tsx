@@ -77,9 +77,6 @@ const Dashboard: React.FC = () => {
             <div className="p-3 bg-blue-100 rounded-lg">
               <Users className="w-6 h-6 text-blue-600" />
             </div>
-            <span className="text-xs font-semibold text-green-600 bg-green-100 px-2 py-1 rounded-full flex items-center gap-1">
-              <TrendingUp className="w-3 h-3" /> +12%
-            </span>
           </div>
           <h3 className="text-3xl font-bold text-slate-800">{totalPatientsToday ?? '—'}</h3>
           <p className="text-sm text-slate-500">Total Patients Today</p>
@@ -105,12 +102,12 @@ const Dashboard: React.FC = () => {
           <p className="text-sm text-slate-500">Doctors on Duty</p>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 ring-2 ring-red-100">
+        <div className={`bg-white p-6 rounded-xl shadow-sm border border-slate-200 ${lowStockAlerts !== 0 ? "ring-2 ring-red-100" : ""}`}>
           <div className="flex items-center justify-between mb-4">
             <div className="p-3 bg-red-100 rounded-lg">
               <AlertTriangle className="w-6 h-6 text-red-600" />
             </div>
-            <span className="text-xs font-bold text-red-600">Action Needed</span>
+            {lowStockAlerts !== 0 && (<span className="text-xs font-bold text-red-600">Action Needed</span>)}
           </div>
           <h3 className="text-3xl font-bold text-slate-800">{lowStockAlerts ?? '—'}</h3>
           <p className="text-sm text-slate-500">Low Stock Alerts</p>

@@ -8,6 +8,8 @@ class DoctorLevel(models.Model):
     class Meta:
         db_table = 'Type_DoctorLevel'
         ordering = ['id']
+        verbose_name = 'Doctor Level'
+        verbose_name_plural = 'Doctor Levels'
 
     def __str__(self):
         return self.title
@@ -20,6 +22,8 @@ class DoctorActiveStatus(models.Model):
     class Meta:
         db_table = 'Type_DoctorActiveStatus'
         ordering = ['id']
+        verbose_name = 'Doctor Active Status'
+        verbose_name_plural = 'Doctor Active Statuses'
 
     def __str__(self):
         return self.status_name
@@ -40,6 +44,8 @@ class Department(models.Model):
     class Meta:
         db_table = 'Department'
         ordering = ['department_name']
+        verbose_name = 'Department'
+        verbose_name_plural = 'Departments'
 
     def __str__(self):
         return self.department_name
@@ -75,9 +81,9 @@ class Doctor(models.Model):
     class Meta:
         db_table = 'Doctor'
         ordering = ['first_name', 'last_name']
-        indexes = [
-            models.Index(fields=['medical_license_id']),
-        ]
+        indexes = [models.Index(fields=['medical_license_id'])]
+        verbose_name = 'Doctor'
+        verbose_name_plural = 'Doctors'
         
     def __str__(self):
         return f"Dr. {self.first_name} {self.last_name or ''}"

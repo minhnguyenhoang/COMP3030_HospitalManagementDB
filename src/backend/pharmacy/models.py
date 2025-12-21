@@ -7,6 +7,8 @@ class TypeCoreMedInfo(models.Model):
     class Meta:
         db_table = 'Type_CoreMedInfo'
         ordering = ['id']
+        verbose_name = 'Core Medical Information'
+        verbose_name_plural = 'Core Medical Information'
 
 
 class TypeMedicineFunction(models.Model):
@@ -15,6 +17,8 @@ class TypeMedicineFunction(models.Model):
     class Meta:
         db_table = 'Type_MedicineFunction'
         ordering = ['id']
+        verbose_name = 'Medicine Function'
+        verbose_name_plural = 'Medicine Functions'
 
 
 class TypeMedicineAdministration(models.Model):
@@ -23,6 +27,8 @@ class TypeMedicineAdministration(models.Model):
     class Meta:
         db_table = 'Type_MedicineAdministration'
         ordering = ['id']
+        verbose_name = 'Medicine Administration Method'
+        verbose_name_plural = 'Medicine Administration Methods'
 
 
 class Medicine(models.Model):
@@ -35,6 +41,8 @@ class Medicine(models.Model):
     class Meta:
         db_table = 'Medicine'
         ordering = ['medicine_name']
+        verbose_name = 'Medicine'
+        verbose_name_plural = 'Medicine'
 
     def __str__(self):
         return self.medicine_name
@@ -56,6 +64,8 @@ class MedicineStockHistory(models.Model):
     class Meta:
         db_table = 'MedicineStockHistory'
         ordering = ['id']  # Oldest first (initial stock first)
+        verbose_name = 'Medicine Stock History'
+        verbose_name_plural = 'Medicine Stock History'
 
 
 class PrescriptionHistory(models.Model):
@@ -73,3 +83,5 @@ class PrescriptionHistory(models.Model):
     class Meta:
         db_table = 'PrescriptionHistory'
         ordering = ['-prescription_date', '-id']  # Most recent first
+        verbose_name = 'Prescription History'
+        verbose_name_plural = 'Prescription History'

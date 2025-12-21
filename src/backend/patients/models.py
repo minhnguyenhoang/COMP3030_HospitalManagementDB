@@ -25,9 +25,9 @@ class Patient(models.Model):
     class Meta:
         db_table = 'Patient'
         ordering = ['last_name', 'first_name']
-        indexes = [
-            models.Index(fields=['last_name']),
-        ]
+        indexes = [models.Index(fields=['last_name'])]
+        verbose_name = 'Patient'
+        verbose_name_plural = 'Patients'
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}" 
@@ -46,6 +46,8 @@ class PatientPersonalInformation(models.Model):
 
     class Meta:
         db_table = 'PatientPersonalInformation'
+        verbose_name = 'Patient Personal Information'
+        verbose_name_plural = 'Patient Personal Information'
 
     def __str__(self):
         return f"Personal Info {self.patient_id}"
@@ -58,6 +60,8 @@ class PatientCoreMedicalInformation(models.Model):
 
     class Meta:
         db_table = 'PatientCoreMedicalInformation'
+        verbose_name = 'Patient Core Medical Information'
+        verbose_name_plural = 'Patient Core Medical Information'
 
 
 class PatientEmergencyContact(models.Model):
@@ -69,3 +73,5 @@ class PatientEmergencyContact(models.Model):
 
     class Meta:
         db_table = 'PatientEmergencyContact'
+        verbose_name = 'Patient Emergency Contact'
+        verbose_name_plural = 'Patient Emergency Contacts'
