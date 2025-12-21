@@ -41,7 +41,7 @@ const StaffPage: React.FC = () => {
           id: d.id, name: `${d.first_name} ${d.last_name}`.trim(),
           role: d.doctor_level || 'Doctor',
           department: d.department?.department_name || '',
-          status: d.active_status || 'Active',
+          status: d.active_status,
           avatar: (d.first_name && d.last_name) ? d.first_name[0] + d.last_name[0] : d.first_name?.[0] || 'Dr',
           phone: d.phone,
           email: d.email
@@ -144,7 +144,7 @@ const StaffPage: React.FC = () => {
         id: d.id, name: `${d.first_name} ${d.last_name}`.trim(),
         role: d.doctor_level || 'Doctor',
         department: d.department?.department_name || '',
-        status: d.active_status || 'Active',
+        status: d.active_status,
         avatar: (d.first_name && d.last_name) ? d.first_name[0] + d.last_name[0] : d.first_name?.[0] || 'Dr',
         phone: d.phone,
         email: d.email
@@ -237,7 +237,7 @@ const StaffPage: React.FC = () => {
         name: `${d.first_name} ${d.last_name}`.trim(),
         role: d.doctor_level || 'Doctor',
         department: d.department?.department_name || '',
-        status: d.active_status || 'Active',
+        status: d.active_status,
         avatar: (d.first_name && d.last_name) ? d.first_name[0] + d.last_name[0] : d.first_name?.[0] || 'Dr',
         phone: d.phone,
         email: d.email
@@ -318,7 +318,7 @@ const StaffPage: React.FC = () => {
             
             <div className={`px-3 py-1 rounded-full text-xs font-bold mb-6
               ${person.status === 'Active' ? 'bg-green-100 text-green-700' : 
-                person.status === 'On Leave' ? 'bg-yellow-100 text-yellow-700' : 'bg-slate-100 text-slate-600'}`}>
+                person.status === 'On Leave' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-600'}`}>
               {person.status}
             </div>
 

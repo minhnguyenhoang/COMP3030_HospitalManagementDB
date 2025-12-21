@@ -12,7 +12,6 @@ import {
   Sparkles,
   ArrowLeft
 } from 'lucide-react';
-import { summarizePatientHistory } from '../services/geminiService';
 import { showSuccess, showError, showWarning } from '../src/utils/toast';
 
 function safePatient(p:any) {
@@ -36,8 +35,6 @@ const PatientProfile: React.FC = () => {
   const { id } = useParams(); // In a real app, fetch by ID
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'info' | 'history' | 'prescriptions'>('info');
-  const [aiSummary, setAiSummary] = useState<string | null>(null);
-  const [loadingAi, setLoadingAi] = useState(false);
 
   const [patient, setPatient] = React.useState<any | null>(null);
   const [appointments, setAppointments] = React.useState<any[]>([]);
@@ -112,26 +109,6 @@ const PatientProfile: React.FC = () => {
     return () => { mounted = false; };
   }, [id]);
 
-  // Generate AI Summary
-  const handleGenerateSummary = async () => {
-    setLoadingAi(true);
-    try {
-      const patientData = safePatient(patient);
-      if (!patientData) {
-        setAiSummary("No patient data available.");
-        setLoadingAi(false);
-        return;
-      }
-      const records = appointments.map(a => ({ id: a.id, date: a.visit_date, doctorName: a.doctor?.first_name || 'Dr', diagnosis: a.diagnosis || '', notes: a.note || '', type: 'Consultation' }));
-      const summary = await summarizePatientHistory(patientData, records);
-      setAiSummary(summary);
-    } catch (e) {
-      setAiSummary("Failed to generate summary.");
-    } finally {
-      setLoadingAi(false);
-    }
-  };
-
   const displayPatient = safePatient(patient);
 
   if (!displayPatient) {
@@ -181,26 +158,9 @@ const PatientProfile: React.FC = () => {
                     DNR - Do Not Resuscitate
                   </span>
                  )}
-                 <button
-                  onClick={handleGenerateSummary}
-                  disabled={loadingAi}
-                  className="flex items-center gap-2 bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-purple-200 transition-colors disabled:opacity-50"
-                 >
-                   <Sparkles className="w-4 h-4" />
-                   {loadingAi ? 'Analyzing...' : 'AI Summary'}
-                 </button>
               </div>
             </div>
             
-            {/* AI Summary Box */}
-            {aiSummary && (
-              <div className="mt-4 p-4 bg-purple-50 border border-purple-100 rounded-lg text-sm text-slate-700 animate-in fade-in duration-500">
-                <h4 className="font-semibold text-purple-800 mb-1 flex items-center gap-2">
-                  <Sparkles className="w-3 h-3" /> AI Medical Summary
-                </h4>
-                <p>{aiSummary}</p>
-              </div>
-            )}
           </div>
         </div>
       </div>

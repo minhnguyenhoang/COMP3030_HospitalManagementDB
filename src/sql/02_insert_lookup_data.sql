@@ -90,7 +90,7 @@ INSERT INTO Type_DoctorLevel (title) VALUES
 -- Type_DoctorActiveStatus (doctor availability status)
 INSERT INTO Type_DoctorActiveStatus (status_name) VALUES
 ('Inactive'),
-('Off-duty'),
+('Off-Duty'),
 ('On-Demand'),
 ('Active');
 

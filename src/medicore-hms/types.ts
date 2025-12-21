@@ -50,7 +50,7 @@ export interface Staff {
   name: string;
   role: string;
   department: string;
-  status: 'Active' | 'On Leave' | 'Off Duty';
+  status: 'Active' | 'On Leave' | 'Off-Duty' | 'On-Demand';
   avatar: string;
   phone: string;
   email: string;
