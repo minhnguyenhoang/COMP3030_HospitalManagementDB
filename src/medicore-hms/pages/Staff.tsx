@@ -2,6 +2,8 @@ import React from 'react';
 import { Staff } from '../types';
 import { Mail, Phone, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { showSuccess, showError } from '../src/utils/toast';
+import { Popup } from 'reactjs-popup';
+import 'reactjs-popup/dist/index.css';
 
 const StaffPage: React.FC = () => {
   const [staff, setStaff] = React.useState<any[]>([]);
@@ -222,7 +224,9 @@ const StaffPage: React.FC = () => {
         role: d.doctor_level || 'Doctor',
         department: d.department?.department_name || '',
         status: d.active_status || 'Active',
-        avatar: (d.first_name && d.last_name) ? d.first_name[0] + d.last_name[0] : d.first_name?.[0] || 'Dr'
+        avatar: (d.first_name && d.last_name) ? d.first_name[0] + d.last_name[0] : d.first_name?.[0] || 'Dr',
+        phone: d.phone || 'None',
+        email: d.email || 'None'
       })));
 
       handleCloseEdit();

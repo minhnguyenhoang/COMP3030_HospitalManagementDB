@@ -8,8 +8,8 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [role, setRole] = useState<UserRole>(UserRole.DOCTOR);
-  const [email, setEmail] = useState('admin');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -83,14 +83,6 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 placeholder="••••••••"
               />
             </div>
-          </div>
-
-          <div className="flex items-center justify-between text-sm">
-            <label className="flex items-center text-slate-600 cursor-pointer">
-              <input type="checkbox" className="mr-2 rounded text-blue-600 focus:ring-blue-500" />
-              Remember me
-            </label>
-            <button type="button" className="text-blue-600 hover:text-blue-700 font-medium">Forgot Password?</button>
           </div>
 
           <button 

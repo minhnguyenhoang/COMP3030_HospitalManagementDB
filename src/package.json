@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "react-tooltip": "^5.30.0",
+    "reactjs-popup": "^2.0.6"
+  }
+}
