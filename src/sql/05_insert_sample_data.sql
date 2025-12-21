@@ -447,104 +447,7 @@ INSERT INTO Appointments (patient_id, doctor_id, visit_date, diagnosis, category
 (45, 4, '2024-12-15 15:00:00', 'COVID-19', 'Consultation', 'Mild symptoms');
 
 -- ==========================================
--- 9. PRESCRIPTIONS (80+ prescriptions linked to appointments)
--- ==========================================
-
--- Prescriptions for appointments with appropriate medicines
-INSERT INTO PrescriptionHistory (appointment_id, medicine_id, prescription_date, amount) VALUES
--- October prescriptions
-(1, 3, '2024-10-01', 30),   -- Aspirin for chest pain
-(1, 49, '2024-10-01', 30),  -- Clopidogrel for chest pain
-(2, 25, '2024-10-02', 60),  -- Metformin for diabetes
-(3, 1, '2024-10-03', 20),   -- Paracetamol for fever
-(3, 5, '2024-10-03', 14),   -- Amoxicillin for fever
-(4, 8, '2024-10-04', 5),    -- Ceftriaxone for surgery
-(4, 9, '2024-10-04', 21),   -- Metronidazole post-surgery
-(5, 21, '2024-10-05', 30),  -- Amlodipine for hypertension
-(6, 2, '2024-10-06', 30),   -- Ibuprofen for migraine
-(7, 37, '2024-10-07', 30),  -- Diclofenac for knee pain
-(8, 15, '2024-10-08', 28),  -- Omeprazole for gastritis
-(9, 34, '2024-10-09', 90),  -- Folic acid prenatal
-(10, 28, '2024-10-10', 2),  -- Salbutamol for asthma
-(10, 29, '2024-10-10', 1),  -- Budesonide for asthma
-(11, 47, '2024-10-11', 1),  -- Hydrocortisone for burns
-(12, 19, '2024-10-12', 30), -- Atorvastatin for cholesterol
-(13, 49, '2024-10-13', 30), -- Clopidogrel for angina
-(13, 22, '2024-10-13', 30), -- Metoprolol for angina
-(14, 2, '2024-10-14', 20),  -- Ibuprofen for sprain
-(15, 1, '2024-10-15', 20),  -- Paracetamol for hernia pain
-(17, 15, '2024-10-17', 14), -- Omeprazole before CT
-(18, 42, '2024-10-18', 30), -- Diazepam for seizures
-(19, 32, '2024-10-19', 30), -- Vitamin C for immunity
-(20, 34, '2024-10-20', 90), -- Folic acid for anemia
-(21, 5, '2024-10-21', 14),  -- Amoxicillin for wound
-(22, 15, '2024-10-22', 28), -- Omeprazole for PCOS
-(23, 48, '2024-10-23', 30), -- Warfarin for AFib
-(24, 37, '2024-10-24', 30), -- Diclofenac for arthritis
-(25, 1, '2024-10-25', 20),  -- Paracetamol for gallstones
-(26, 50, '2024-10-26', 30), -- Levothyroxine for thyroid
-(27, 5, '2024-10-27', 10),  -- Amoxicillin for tonsillitis
-(29, 17, '2024-10-29', 10), -- Metoclopramide for vomiting
-(30, 40, '2024-10-30', 30), -- Fluoxetine for Parkinsons
-
--- November prescriptions
-(31, 6, '2024-11-01', 5),   -- Azithromycin for bronchitis
-(31, 1, '2024-11-01', 30),  -- Paracetamol for bronchitis
-(32, 13, '2024-11-02', 14), -- Acyclovir for chickenpox
-(33, 49, '2024-11-03', 30), -- Clopidogrel for CAD
-(33, 23, '2024-11-03', 30), -- Enalapril for CAD
-(34, 31, '2024-11-04', 90), -- Vitamin B for pregnancy
-(35, 1, '2024-11-05', 30),  -- Paracetamol for fracture
-(36, 10, '2024-11-06', 10), -- Cetirizine for allergy
-(37, 1, '2024-11-07', 20),  -- Paracetamol post-surgery
-(38, 15, '2024-11-08', 28), -- Omeprazole for liver
-(40, 45, '2024-11-10', 30), -- Prednisolone for MS
-(41, 5, '2024-11-11', 10),  -- Amoxicillin for ear infection
-(42, 1, '2024-11-12', 60),  -- Paracetamol for cancer pain
-(43, 24, '2024-11-13', 30), -- Furosemide for heart failure
-(44, 38, '2024-11-14', 30), -- Meloxicam for back pain
-(45, 7, '2024-11-15', 7),   -- Ciprofloxacin for pneumonia
-(45, 1, '2024-11-15', 30),  -- Paracetamol for pneumonia
-(47, 37, '2024-11-17', 30), -- Diclofenac for varicose veins
-(48, 4, '2024-11-18', 5),   -- Morphine for acute abdomen
-(49, 44, '2024-11-19', 1),  -- Clotrimazole for eczema
-(50, 15, '2024-11-20', 28), -- Omeprazole for GERD
-(51, 49, '2024-11-21', 30), -- Clopidogrel follow-up
-(52, 25, '2024-11-22', 60), -- Metformin follow-up
-(54, 5, '2024-11-24', 7),   -- Amoxicillin follow-up
-(55, 21, '2024-11-25', 30), -- Amlodipine follow-up
-(56, 2, '2024-11-26', 30),  -- Ibuprofen follow-up
-(58, 15, '2024-11-28', 28), -- Omeprazole follow-up
-(59, 33, '2024-11-29', 90), -- Calcium + D3 prenatal
-(60, 28, '2024-11-30', 2),  -- Salbutamol follow-up
-
--- December prescriptions
-(62, 19, '2024-12-01', 30), -- Atorvastatin follow-up
-(63, 22, '2024-12-02', 30), -- Metoprolol stress test
-(65, 1, '2024-12-04', 20),  -- Paracetamol pre-surgery
-(67, 1, '2024-12-06', 20),  -- Paracetamol for imaging
-(68, 42, '2024-12-07', 30), -- Diazepam follow-up
-(70, 34, '2024-12-09', 90), -- Folic acid follow-up
-(72, 15, '2024-12-11', 28), -- Omeprazole follow-up
-(73, 48, '2024-12-12', 30), -- Warfarin follow-up
-(74, 37, '2024-12-13', 30), -- Diclofenac follow-up
-(74, 45, '2024-12-13', 15), -- Prednisolone for arthritis
-(75, 1, '2024-12-14', 30),  -- Paracetamol pre-surgery
-(76, 50, '2024-12-15', 30), -- Levothyroxine follow-up
-(77, 5, '2024-12-16', 7),   -- Amoxicillin follow-up
-(81, 7, '2024-12-01', 7),   -- Ciprofloxacin for UTI
-(82, 9, '2024-12-02', 7),   -- Metronidazole for diarrhea
-(83, 48, '2024-12-03', 30), -- Warfarin for pacemaker
-(85, 2, '2024-12-05', 30),  -- Ibuprofen for shoulder
-(87, 1, '2024-12-07', 20),  -- Paracetamol post-hemorrhoid surgery
-(88, 15, '2024-12-08', 28), -- Omeprazole for celiac
-(91, 10, '2024-12-11', 7),  -- Cetirizine for conjunctivitis
-(93, 22, '2024-12-13', 30), -- Metoprolol pre-valve surgery
-(94, 1, '2024-12-14', 30),  -- Paracetamol pre-hip surgery
-(95, 14, '2024-12-15', 5);  -- Oseltamivir for COVID
-
--- ==========================================
--- 10. MEDICINE STOCK REMOVALS (from prescriptions)
+-- 9. MEDICINE STOCK REMOVALS (from prescriptions)
 -- ==========================================
 
 -- Stock removals for prescriptions (linking to appointments)
@@ -584,7 +487,7 @@ INSERT INTO MedicineStockHistory (medicine_id, add_remove, amount, appointment_i
 (40, 0, 30, 30, 'Dispensed for appointment #30');
 
 -- ==========================================
--- 11. PATIENT CORE MEDICAL INFORMATION
+-- 10. PATIENT CORE MEDICAL INFORMATION
 -- ==========================================
 
 -- Add allergies and chronic conditions for some patients
@@ -607,7 +510,7 @@ INSERT INTO PatientCoreMedicalInformation (patient_id, information_type, note) V
 (45, 1, 'Shellfish allergy');
 
 -- ==========================================
--- 12. PATIENT EMERGENCY CONTACTS
+-- 11. PATIENT EMERGENCY CONTACTS
 -- ==========================================
 
 -- Add emergency contacts for patients 1-20

@@ -29,7 +29,6 @@ from doctors.views import DoctorViewSet, DepartmentViewSet, DoctorLevelViewSet, 
 from appointments.views import AppointmentViewSet
 from pharmacy.views import (
     MedicineViewSet,
-    PrescriptionViewSet,
     MedicineStockHistoryViewSet,
     TypeMedicineFunctionViewSet,
     TypeMedicineAdministrationViewSet
@@ -44,7 +43,6 @@ router.register(r'doctor-levels', DoctorLevelViewSet)
 router.register(r'doctor-statuses', DoctorActiveStatusViewSet)
 router.register(r'appointments', AppointmentViewSet)
 router.register(r'medicines', MedicineViewSet)
-router.register(r'prescriptions', PrescriptionViewSet)
 router.register(r'medicine-stock', MedicineStockHistoryViewSet)
 router.register(r'medicine-types', TypeMedicineFunctionViewSet)
 router.register(r'medicine-admin-methods', TypeMedicineAdministrationViewSet)

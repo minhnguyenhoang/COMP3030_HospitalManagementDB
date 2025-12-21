@@ -340,14 +340,6 @@ DELIMITER //
 
 -- Trigger: Update Stock After Prescription
 -- Automatically reduces stock when a prescription is created
-CREATE TRIGGER trg_UpdateStockAfterPrescription
-AFTER INSERT ON PrescriptionHistory
-FOR EACH ROW
-BEGIN
-    -- Insert stock history record (add_remove = 0 means remove/deduct)
-    INSERT INTO MedicineStockHistory (medicine_id, add_remove, amount, appointment_id, note)
-    VALUES (NEW.medicine_id, 0, NEW.amount, NEW.appointment_id, 'Prescription Deduction');
-END //
 
 -- Trigger: Prevent Negative Medicine Stock
 -- Validates sufficient stock exists before allowing removal
@@ -369,6 +361,26 @@ BEGIN
         SET MESSAGE_TEXT = 'Error: Insufficient medicine stock.';
     END IF;
 END //
+
+CREATE TRIGGER trg_MedicineStockHistoryCheck
+BEFORE INSERT ON MedicineStockHistory
+FOR EACH ROW
+BEGIN
+    IF NEW.add_remove = 0 AND NEW.appointment_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'appointment_id cannot be NULL when add_remove = 0';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_MedicineStockHistoryCheckUpdate
+BEFORE UPDATE ON MedicineStockHistory
+FOR EACH ROW
+BEGIN
+    IF NEW.add_remove = 0 AND NEW.appointment_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'appointment_id cannot be NULL when add_remove = 0';
+    END IF;
+END$$
 
 DELIMITER ;
 

@@ -85,17 +85,17 @@ INSERT INTO Appointments (patient_id, doctor_id, visit_date, diagnosis, category
 SET @last_appt_id = (SELECT MAX(id) FROM Appointments);
 
 -- Today's prescriptions
-INSERT INTO PrescriptionHistory (appointment_id, medicine_id, prescription_date, amount) VALUES
-(@last_appt_id - 0, 1, CURDATE(), 20),      -- Paracetamol
-(@last_appt_id - 2, 15, CURDATE(), 28),     -- Omeprazole
-(@last_appt_id - 3, 28, CURDATE(), 2),      -- Salbutamol
-(@last_appt_id - 5, 2, CURDATE(), 30);      -- Ibuprofen
+INSERT INTO MedicineStockHistory (appointment_id, medicine_id, add_remove, amount) VALUES
+(@last_appt_id - 0, 1, 0, 20),      -- Paracetamol
+(@last_appt_id - 2, 15, 0, 28),     -- Omeprazole
+(@last_appt_id - 3, 28, 0, 2),      -- Salbutamol
+(@last_appt_id - 5, 2, 0, 30);      -- Ibuprofen
 
 -- Yesterday's prescriptions
-INSERT INTO PrescriptionHistory (appointment_id, medicine_id, prescription_date, amount) VALUES
-(@last_appt_id - 10, 25, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 60),  -- Metformin
-(@last_appt_id - 11, 21, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 30),  -- Amlodipine
-(@last_appt_id - 12, 32, DATE_SUB(CURDATE(), INTERVAL 1 DAY), 30);  -- Vitamin C
+INSERT INTO MedicineStockHistory (appointment_id, medicine_id, add_remove, amount) VALUES
+(@last_appt_id - 10, 25, 0, 60),  -- Metformin
+(@last_appt_id - 11, 21, 0, 30),  -- Amlodipine
+(@last_appt_id - 12, 32, 0, 30);  -- Vitamin C
 
 -- ==========================================
 -- SUMMARY

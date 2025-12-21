@@ -66,22 +66,3 @@ class MedicineStockHistory(models.Model):
         ordering = ['id']  # Oldest first (initial stock first)
         verbose_name = 'Medicine Stock History'
         verbose_name_plural = 'Medicine Stock History'
-
-
-class PrescriptionHistory(models.Model):
-    appointment = models.ForeignKey(
-        'appointments.Appointment',
-        on_delete=models.CASCADE,
-        related_name='prescriptions',
-        blank=True,
-        null=True
-    )
-    medicine = models.ForeignKey(Medicine, on_delete=models.PROTECT)
-    prescription_date = models.DateField(blank=True, null=True)
-    amount = models.IntegerField()
-
-    class Meta:
-        db_table = 'PrescriptionHistory'
-        ordering = ['-prescription_date', '-id']  # Most recent first
-        verbose_name = 'Prescription History'
-        verbose_name_plural = 'Prescription History'
