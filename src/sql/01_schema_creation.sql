@@ -166,28 +166,20 @@ CREATE TABLE Appointments (
     FOREIGN KEY (doctor_id) REFERENCES Doctor(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
--- PrescriptionHistory (pharmacy.PrescriptionHistory)
-CREATE TABLE PrescriptionHistory (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    appointment_id INT NULL,
-    medicine_id INT NOT NULL,
-    prescription_date DATE NULL,
-    amount INT NOT NULL,
-    FOREIGN KEY (appointment_id) REFERENCES Appointments(id) ON DELETE CASCADE,
-    FOREIGN KEY (medicine_id) REFERENCES Medicine(id) ON DELETE RESTRICT
-) ENGINE=InnoDB;
-
 -- MedicineStockHistory (pharmacy.MedicineStockHistory)
 CREATE TABLE MedicineStockHistory (
     id INT AUTO_INCREMENT PRIMARY KEY,
     medicine_id INT NOT NULL,
     add_remove TINYINT(1) NOT NULL,
     amount INT NOT NULL,
-    appointment_id INT NULL,
+    appointment_id INT,
     note VARCHAR(255) NULL,
     FOREIGN KEY (medicine_id) REFERENCES Medicine(id) ON DELETE CASCADE,
     FOREIGN KEY (appointment_id) REFERENCES Appointments(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
+
+-- ALTER TABLE MedicineStockHistory
+-- ADD CONSTRAINT CHK_AppointmentID CHECK (appointment_id IS NOT NULL OR add_remove = 1);
 
 -- ==========================================
 -- NOTES:

@@ -114,21 +114,35 @@ def setup_django():
     from django.core.management import call_command
 
     try:
-        # Create Django system tables (auth, contenttypes, sessions, admin)
-        print("      → Creating Django system tables...", end=" ")
-        call_command('migrate', 'auth', verbosity=0)
+        # Step 1: Create ALL migrations first (before checking tables)
+        print("      → Creating all migrations...", end=" ")
+        call_command('makemigrations', 'users', verbosity=0)
+        call_command('makemigrations', 'doctors', verbosity=0)
+        call_command('makemigrations', 'patients', verbosity=0)
+        call_command('makemigrations', 'pharmacy', verbosity=0)
+        call_command('makemigrations', 'appointments', verbosity=0)
+        print("✓")
+
+        # Step 2: Migrate contenttypes first (required by auth)
+        print("      → Migrating contenttypes...", end=" ")
         call_command('migrate', 'contenttypes', verbosity=0)
+        print("✓")
+
+        # Step 3: Fake ALL app migrations (tables already created by SQL)
+        print("      → Registering existing tables (fake)...", end=" ")
+        call_command('migrate', 'doctors', '--fake', verbosity=0)
+        call_command('migrate', 'patients', '--fake', verbosity=0)
+        call_command('migrate', 'pharmacy', '--fake', verbosity=0)
+        call_command('migrate', 'appointments', '--fake', verbosity=0)
+        print("✓")
+
+        # Step 4: Migrate custom User model and auth system
+        print("      → Migrating User model and auth system...", end=" ")
+        call_command('migrate', 'users', verbosity=0)
+        call_command('migrate', 'auth', verbosity=0)
         call_command('migrate', 'sessions', verbosity=0)
         call_command('migrate', 'admin', verbosity=0)
         call_command('migrate', 'token_blacklist', verbosity=0)
-        print("✓")
-
-        # Fake app migrations (tables already created by SQL)
-        print("      → Registering app migrations...", end=" ")
-        call_command('migrate', 'patients', '--fake', verbosity=0)
-        call_command('migrate', 'doctors', '--fake', verbosity=0)
-        call_command('migrate', 'pharmacy', '--fake', verbosity=0)
-        call_command('migrate', 'appointments', '--fake', verbosity=0)
         print("✓")
 
         print("      ✓ Django setup completed")
@@ -137,6 +151,67 @@ def setup_django():
     except Exception as e:
         print(f"✗")
         print(f"      Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
+def create_test_users():
+    """Create test users with different roles"""
+    print(f"\n[5/5] Creating test users...")
+
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    import django
+    django.setup()
+
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+
+    test_users = [
+        {
+            'username': 'admin',
+            'email': 'admin@hospital.com',
+            'password': 'admin123',
+            'role': 'ADMIN',
+            'first_name': 'Admin',
+            'last_name': 'User',
+            'is_staff': True,
+            'is_superuser': True
+        },
+        {
+            'username': 'doctor',
+            'email': 'doctor@hospital.com',
+            'password': 'doctor123',
+            'role': 'DOCTOR',
+            'first_name': 'John',
+            'last_name': 'Doe'
+        },
+        {
+            'username': 'receptionist',
+            'email': 'receptionist@hospital.com',
+            'password': 'receptionist123',
+            'role': 'RECEPTIONIST',
+            'first_name': 'Jane',
+            'last_name': 'Smith'
+        }
+    ]
+
+    try:
+        for user_data in test_users:
+            username = user_data['username']
+            # Check if user already exists
+            if User.objects.filter(username=username).exists():
+                print(f"      ⚠ User '{username}' already exists, skipping...")
+                continue
+
+            User.objects.create_user(**user_data)
+            print(f"      ✓ Created {user_data['role']} user: {username}")
+
+        print("      ✓ Test users created successfully")
+        return True
+
+    except Exception as e:
+        print(f"      ✗ Error creating test users: {e}")
         return False
 
 
@@ -206,8 +281,9 @@ def main():
     """Main setup function"""
     print("\nThis script will:")
     print("  1. Create MySQL database from SQL scripts")
-    print("  2. Setup Django system tables")
-    print("  3. Verify the installation\n")
+    print("  2. Setup Django system tables and User model")
+    print("  3. Create test users with different roles")
+    print("  4. Verify the installation\n")
 
     # Step 1: Database setup
     if not setup_database():
@@ -219,7 +295,11 @@ def main():
         print("\n✗ Setup failed at Django configuration stage")
         sys.exit(1)
 
-    # Step 3: Verification
+    # Step 3: Create test users
+    if not create_test_users():
+        print("\n⚠ Test user creation had issues (you can create users manually)")
+
+    # Step 4: Verification
     if not verify_setup():
         print("\n⚠ Setup completed but verification had issues")
         verification_success = False
@@ -229,10 +309,14 @@ def main():
         print("\n" + "="*70)
         print("✓ SETUP COMPLETED SUCCESSFULLY!")
         print("="*70)
+        print("\n🔐 Test User Credentials:")
+        print("  • Admin:        username: admin        password: admin123")
+        print("  • Doctor:       username: doctor       password: doctor123")
+        print("  • Receptionist: username: receptionist password: receptionist123")
         print("\nNext steps:")
-        print("  1. Create superuser:  python manage.py createsuperuser")
-        print("  2. Start server:      python manage.py runserver")
-        print("  3. Access frontend:   http://localhost:3000")
+        print("  1. Start backend:     python manage.py runserver")
+        print("  2. Start frontend:    cd ../medicore-hms && npm run dev")
+        print("  3. Access frontend:   http://localhost:5173")
         print("  4. Access admin:      http://localhost:8000/admin")
         print()
 

@@ -13,6 +13,7 @@ cd backend
 pip install -r requirements.txt
 ```
 Or if you use `uv`, do `uv pip install -r -requirements.txt` and make sure that the corresponding (virtual) environment used with uv is enabled.
+
 ### 2. Configure Database
 Run the file `test_mysql_connection.py` to setup the `.env` file and test the connection:
 ```bash
@@ -30,19 +31,25 @@ DB_PORT=3306
 ```bash
 python setup_complete.py
 ```
+After run this command, it will create 3 kinds of account:
+
+admin - admin123
+doctor - doctor123
+receptionist - receptionist123
 
 This single script will:
-- ✅ Create HospitalDB database
-- ✅ Import all SQL schemas and lookup data
-- ✅ Setup Django system tables
-- ✅ Verify installation
+- Create HospitalDB database
+- Import all SQL schemas and lookup data
+- Setup Django system tables
+- Verify installation
 
-### 4. Create Admin User
+Do not need to run the step 4 any more
+<!-- ### 4. Create Admin User
 ```bash
 python manage.py createsuperuser
 
 # Example: enter: admin and admin123 for the password
-```
+``` -->
 
 ### 5. Start Backend Server
 ```bash
@@ -109,87 +116,3 @@ If you need to reset everything:
 python setup_complete.py
 ```
 The script automatically drops and recreates the database.
-
-## Project Structure
-
-```
-COMP3030_HospitalManagementDB/
-├── backend/
-│   ├── setup_complete.py          # One-command setup script
-│   ├── manage.py                   # Django management
-│   ├── .env                        # Database configuration
-│   ├── requirements.txt            # Python dependencies
-│   └── [apps]/                     # Django apps
-├── medicore-hms/                   # React frontend
-│   ├── pages/                      # Page components
-│   └── src/api/                    # API calls
-└── src/sql/                       # MySQL schema files
-    ├── 01_schema_creation.sql
-    ├── 02_insert_lookup_data.sql
-    ├── 03_procedures_triggers_views.sql
-    └── 04_views_metrics.sql
-```
-
-## API Endpoints
-
-### Authentication
-- POST `/api/auth/token/` - Login
-- POST `/api/auth/token/refresh/` - Refresh token
-
-### Resources
-- GET/POST `/api/patients/` - Patient management
-- GET/POST `/api/doctors/` - Doctor management
-- GET/POST `/api/appointments/` - Appointment management
-- GET/POST `/api/medicines/` - Medicine inventory
-- GET/POST `/api/departments/` - Department management
-
-## Features
-
-### Dashboard
-- Patient statistics
-- Doctor workload metrics
-- Medicine stock levels
-- Recent appointments
-
-### Patient Management
-- Full patient profiles
-- Medical history
-- Emergency contacts
-- Visit tracking
-
-### Doctor Management
-- Doctor directory
-- Department assignments
-- Specialization tracking
-- Availability status
-
-### Appointments
-- Schedule appointments
-- Diagnosis tracking
-- Prescription management
-
-### Inventory
-- Medicine stock tracking
-- Low stock alerts
-- Prescription history
-- Stock adjustments
-
-## Database Schema
-
-All tables are created from MySQL scripts as per project requirements:
-- Tables use **PascalCase** naming (e.g., `Doctor`, `Patient`)
-- Columns use **snake_case** naming (e.g., `first_name`, `doctor_id`)
-- Foreign keys use **RESTRICT** for integrity
-- Lookup tables use **AUTO_INCREMENT** IDs
-
-## Support
-
-For issues or questions:
-1. Check the Troubleshooting section above
-2. Verify your `.env` configuration
-3. Ensure MySQL server is running
-4. Check that all dependencies are installed
-
-## Credits
-
-Developed for COMP3030 Database Systems course.

@@ -53,7 +53,7 @@ ORDER BY DATE(visit_date);
 -- Most common diagnoses based on appointment records
 CREATE OR REPLACE VIEW view_top_conditions AS
 SELECT
-    diagnosis AS condition,
+    diagnosis AS `condition`,
     COUNT(*) AS cnt
 FROM Appointments
 WHERE diagnosis IS NOT NULL AND diagnosis <> ''
@@ -111,21 +111,21 @@ ORDER BY total_appointments DESC;
 -- Last 30 days of prescription activity
 CREATE OR REPLACE VIEW view_recent_prescriptions AS
 SELECT
-    ph.id AS prescription_id,
-    ph.prescription_date,
+    ph.id AS stock_id,
+    a.visit_date,
     m.medicine_name,
     ph.amount,
     m.medicine_unit,
     a.id AS appointment_id,
     CONCAT(p.first_name, ' ', IFNULL(p.last_name, '')) AS patient_name,
     CONCAT(d.first_name, ' ', IFNULL(d.last_name, '')) AS doctor_name
-FROM PrescriptionHistory ph
+FROM MedicineStockHistory ph
 JOIN Medicine m ON ph.medicine_id = m.id
 LEFT JOIN Appointments a ON ph.appointment_id = a.id
 LEFT JOIN Patient p ON a.patient_id = p.id
 LEFT JOIN Doctor d ON a.doctor_id = d.id
-WHERE ph.prescription_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-ORDER BY ph.prescription_date DESC;
+WHERE a.visit_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+ORDER BY a.visit_date DESC;
 
 -- View: Patient Visit History Summary
 -- Patient visit counts and date ranges

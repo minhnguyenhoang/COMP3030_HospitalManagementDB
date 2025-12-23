@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Medicine, PrescriptionHistory, MedicineStockHistory, TypeMedicineFunction, TypeMedicineAdministration
+from .models import Medicine, MedicineStockHistory, TypeMedicineFunction, TypeMedicineAdministration
 
 
 class TypeMedicineFunctionSerializer(serializers.ModelSerializer):
@@ -17,15 +17,6 @@ class TypeMedicineAdministrationSerializer(serializers.ModelSerializer):
 class MedicineSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medicine
-        fields = '__all__'
-
-
-class PrescriptionSerializer(serializers.ModelSerializer):
-    medicine = MedicineSerializer(read_only=True)
-    medicine_id = serializers.PrimaryKeyRelatedField(queryset=Medicine.objects.all(), source='medicine', write_only=True)
-
-    class Meta:
-        model = PrescriptionHistory
         fields = '__all__'
 
 

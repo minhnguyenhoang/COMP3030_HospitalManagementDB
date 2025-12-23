@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Patient, MedicalRecord, Prescription } from '../types';
+import { Patient, MedicalRecord, Prescription, UserRole } from '../types';
 import {
   User,
   Calendar,
@@ -10,7 +10,8 @@ import {
   Pill,
   Clock,
   Sparkles,
-  ArrowLeft
+  ArrowLeft,
+  Shield
 } from 'lucide-react';
 import { showSuccess, showError, showWarning } from '../src/utils/toast';
 
@@ -31,7 +32,7 @@ function safePatient(p:any) {
   };
 }
 
-const PatientProfile: React.FC = () => {
+const PatientProfile: React.FC<{ role?: UserRole }> = ({ role }) => {
   const { id } = useParams(); // In a real app, fetch by ID
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'info' | 'history' | 'prescriptions'>('info');
@@ -67,10 +68,23 @@ const PatientProfile: React.FC = () => {
         showWarning('No appointments found for this patient');
         return;
       }
-      const payload = { appointment_id: appt.id, visit_date: appt.visit_date || new Date().toISOString().slice(0,10), medicine: prescForm.medicine, amount: prescForm.amount };
-      await api.createPrescription(payload);
-      const pres = await api.fetchPrescriptions();
-      setPrescriptions((pres.results || pres).filter((pr:any) => appt && pr.appointment_id === appt.id));
+      await api.createMedicineStock({
+        medicine_id: prescForm.medicine,
+        add_remove: false,
+        amount: prescForm.amount,
+        appointment: appt.id,
+        note: 'Prescription'
+      });
+
+      // Fetch updated stock history and filter prescriptions
+      const stockResp = await api.fetchMedicineStock();
+      const allStock = stockResp.results || stockResp;
+      const prescriptions = allStock.filter((s: any) =>
+        s.appointment === appt.id &&
+        (s.note === 'Prescription' || s.note === 'Prescription deduction')
+      );
+      setPrescriptions(prescriptions);
+
       setShowPrescModal(false);
       setPrescForm({medicine:'', amount:1});
       showSuccess('Prescription created successfully');
@@ -88,7 +102,7 @@ const PatientProfile: React.FC = () => {
         if (id) {
           const p = await api.fetchPatient(id);
           const appts = await api.fetchAppointments();
-          const pres = await api.fetchPrescriptions?.();
+          const stockResp = await api.fetchMedicineStock();
 
           if (!mounted) return;
           setPatient(p);
@@ -96,10 +110,14 @@ const PatientProfile: React.FC = () => {
           const apptList = (appts.results || appts).filter((a: any) => String(a.patient) === String(id));
           setAppointments(apptList);
 
-          if (pres) {
-            const presList = (pres.results || pres).filter((pr: any) => apptList.some((a: any) => a.id === pr.appointment_id));
-            setPrescriptions(presList);
-          }
+          // Filter prescriptions from stock history
+          const allStock = stockResp.results || stockResp;
+          const appointmentIds = apptList.map((a: any) => a.id);
+          const presList = allStock.filter((s: any) =>
+            appointmentIds.includes(s.appointment) &&
+            (s.note === 'Prescription' || s.note === 'Prescription deduction')
+          );
+          setPrescriptions(presList);
         }
       } catch (err) {
         // ignore
@@ -223,6 +241,48 @@ const PatientProfile: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Sensitive Information - Admin Only */}
+              {role === UserRole.ADMIN && patient && (
+                <div className="space-y-4 md:col-span-2 mt-6 pt-6 border-t border-slate-200">
+                  <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-purple-500" /> Sensitive Information
+                    <span className="ml-2 px-2 py-0.5 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">Admin Only</span>
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                    <div className="space-y-2">
+                      <div className="text-slate-500 font-medium">Insurance Information</div>
+                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <div className="text-xs text-slate-500 mb-1">Insurance ID</div>
+                        <div className="font-mono font-medium text-slate-800">{patient.insurance_id || 'N/A'}</div>
+                      </div>
+                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <div className="text-xs text-slate-500 mb-1">Provider</div>
+                        <div className="font-medium text-slate-800">{patient.insurance_provider || 'N/A'}</div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="text-slate-500 font-medium">National ID</div>
+                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <div className="font-mono font-medium text-slate-800">{patient.personal_info?.nat_id || 'N/A'}</div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="text-slate-500 font-medium">Travel Documents</div>
+                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <div className="text-xs text-slate-500 mb-1">Passport</div>
+                        <div className="font-mono font-medium text-slate-800">{patient.personal_info?.passport_no || 'N/A'}</div>
+                      </div>
+                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <div className="text-xs text-slate-500 mb-1">Driver's License</div>
+                        <div className="font-mono font-medium text-slate-800">{patient.personal_info?.drivers_license_no || 'N/A'}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -259,13 +319,23 @@ const PatientProfile: React.FC = () => {
               <div className="flex justify-between items-center mb-3">
                 <h4 className="text-sm text-slate-600">Prescriptions</h4>
                 <div className="flex gap-2">
-                  <button onClick={async ()=>{
-                    // prepare modal data
-                    setShowPrescModal(true);
-                    const api = await import('../src/api');
-                    const meds = await api.fetchMedicines();
-                    setMedicinesList(meds.results || meds);
-                  }} className="px-3 py-1 rounded bg-blue-600 text-white text-sm">New Prescription</button>
+                  {/* Only DOCTOR and ADMIN can prescribe */}
+                  {(role === UserRole.DOCTOR || role === UserRole.ADMIN) && (
+                    <button onClick={async ()=>{
+                      // prepare modal data
+                      setShowPrescModal(true);
+                      const api = await import('../src/api');
+                      const meds = await api.fetchMedicines();
+                      setMedicinesList(meds.results || meds);
+                    }} className="px-3 py-1 rounded bg-blue-600 text-white text-sm hover:bg-blue-700 transition-colors">
+                      New Prescription
+                    </button>
+                  )}
+                  {role === UserRole.RECEPTIONIST && (
+                    <div className="text-xs text-slate-500 italic">
+                      Only doctors can prescribe medication
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="overflow-x-auto">
@@ -279,14 +349,14 @@ const PatientProfile: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-sm">
-                    {prescriptions.length > 0 ? prescriptions.map((p:any) => (
-                      <tr key={p.id || `${p.medicine}-${p.appointment_id}`}>
+                    {prescriptions.length > 0 ? prescriptions.map((p:any, idx: number) => (
+                      <tr key={p.id || idx}>
                         <td className="px-4 py-3 font-medium text-blue-600 flex items-center gap-2">
-                          <Pill className="w-4 h-4" /> {p.medicine?.medicine_name || p.medicine_name || p.medication || p.medicine}
+                          <Pill className="w-4 h-4" /> {p.medicine_name || 'Medicine'}
                         </td>
-                        <td className="px-4 py-3">{p.amount || p.dosage}</td>
-                        <td className="px-4 py-3">{p.doctor?.first_name ? `Dr. ${p.doctor.first_name}` : p.doctorName || 'Dr.'}</td>
-                        <td className="px-4 py-3 text-slate-500">{p.prescription_date || p.date || p.visit_date}</td>
+                        <td className="px-4 py-3">{p.amount || '—'}</td>
+                        <td className="px-4 py-3">{'—'}</td>
+                        <td className="px-4 py-3 text-slate-500">{'—'}</td>
                       </tr>
                     )) : (
                       <tr>

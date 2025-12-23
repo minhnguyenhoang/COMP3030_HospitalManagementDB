@@ -53,6 +53,10 @@ export async function login(username: string, password: string) {
   if (res.access) {
     localStorage.setItem('access_token', res.access);
     if (res.refresh) localStorage.setItem('refresh_token', res.refresh);
+    // Store user info including role
+    if (res.role) localStorage.setItem('user_role', res.role);
+    if (res.email) localStorage.setItem('user_email', res.email);
+    if (res.username) localStorage.setItem('user_username', res.username);
   }
   return res;
 }
@@ -60,6 +64,21 @@ export async function login(username: string, password: string) {
 export function logout() {
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
+  localStorage.removeItem('user_role');
+  localStorage.removeItem('user_email');
+  localStorage.removeItem('user_username');
+}
+
+export function getCurrentUser() {
+  return {
+    role: localStorage.getItem('user_role'),
+    email: localStorage.getItem('user_email'),
+    username: localStorage.getItem('user_username'),
+  };
+}
+
+export async function register(userData: any) {
+  return request('/auth/register/', { method: 'POST', body: JSON.stringify(userData) }, false);
 }
 
 export async function fetchPatients() {
@@ -182,6 +201,8 @@ export async function fetchMetrics(lowStockThreshold?: number) {
 export default {
   login,
   logout,
+  getCurrentUser,
+  register,
   fetchPatients,
   fetchPatient,
   searchPatientByPhone,

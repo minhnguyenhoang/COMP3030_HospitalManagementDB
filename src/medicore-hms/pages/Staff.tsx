@@ -1,9 +1,9 @@
 import React from 'react';
-import { Staff } from '../types';
+import { Staff, UserRole } from '../types';
 import { Mail, Phone, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
 import { showSuccess, showError } from '../src/utils/toast';
 
-const StaffPage: React.FC = () => {
+const StaffPage: React.FC<{ role?: UserRole }> = ({ role }) => {
   const [staff, setStaff] = React.useState<Staff[]>([]);
   const [loading, setLoading] = React.useState(false);
   const [showAdd, setShowAdd] = React.useState(false);
@@ -305,36 +305,44 @@ const StaffPage: React.FC = () => {
           <h2 className="text-2xl font-bold text-slate-800">Staff Management</h2>
           <p className="text-slate-500 text-sm">Doctors, Nurses, and Support Staff</p>
         </div>
-        <div className="flex gap-2">
-          <button onClick={handleOpenAddDept} className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
-            Add Department
-          </button>
-          <button onClick={handleOpenAdd} className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
-            Add Employee
-          </button>
-        </div>
+        {role === UserRole.ADMIN && (
+          <div className="flex gap-2">
+            <button onClick={handleOpenAddDept} className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
+              Add Department
+            </button>
+            <button onClick={handleOpenAdd} className="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm">
+              Add Employee
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {staff.map((person: Staff) => (
           <div key={person.id} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col items-center text-center relative hover:shadow-md transition-shadow">
-            <div className="absolute top-4 right-4 flex gap-1">
-              <button
-                onClick={() => handleOpenEdit(person.id)}
-                className="text-green-600 hover:bg-green-50 p-1.5 rounded transition-colors"
-                title="Edit"
-              >
-                <Pencil className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => handleDelete(person.id)}
-                className="text-red-600 hover:bg-red-50 p-1.5 rounded transition-colors"
-                title="Delete"
-                disabled={loading}
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
+            {role === UserRole.ADMIN ? (
+              <div className="absolute top-4 right-4 flex gap-1">
+                <button
+                  onClick={() => handleOpenEdit(person.id)}
+                  className="text-green-600 hover:bg-green-50 p-1.5 rounded transition-colors"
+                  title="Edit"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDelete(person.id)}
+                  className="text-red-600 hover:bg-red-50 p-1.5 rounded transition-colors"
+                  title="Delete"
+                  disabled={loading}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="absolute top-4 right-4">
+                <span className="text-xs text-slate-400 italic">View only</span>
+              </div>
+            )}
             
             <div className="w-20 h-20 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xl font-bold mb-4 border border-slate-200">
               {person.avatar}
@@ -350,17 +358,19 @@ const StaffPage: React.FC = () => {
               {person.status}
             </div>
 
-            <div className="flex gap-2 w-full mt-auto">
-              <a id="link" href={`mailto:${person.email}`} className="flex-1 flex items-center">
-              <button className="flex-1 flex items-center justify-center gap-2 py-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 text-sm transition-colors">
-                <Mail className="w-4 h-4" /> {person.email}
-              </button>
+            <div className="flex flex-col gap-2 w-full mt-auto">
+              <a href={`mailto:${person.email}`} className="w-full">
+                <button className="w-full flex items-center justify-start gap-2 py-2 px-3 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 text-sm transition-colors">
+                  <Mail className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{person.email}</span>
+                </button>
               </a>
-              
-              <a id="link" href={`tel:${person.phone}`} className="flex-1 flex items-center">
-              <button className="flex-1 flex items-center justify-center gap-2 py-2 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 text-sm transition-colors">
-                <Phone className="w-4 h-4" /> {person.phone}
-              </button>
+
+              <a href={`tel:${person.phone}`} className="w-full">
+                <button className="w-full flex items-center justify-start gap-2 py-2 px-3 border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50 text-sm transition-colors">
+                  <Phone className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{person.phone}</span>
+                </button>
               </a>
             </div>
           </div>

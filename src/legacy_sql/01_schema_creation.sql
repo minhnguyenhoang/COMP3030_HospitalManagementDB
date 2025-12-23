@@ -150,7 +150,6 @@ CREATE INDEX idx_appt_patient ON Appointments(PatientID);
 CREATE INDEX idx_appt_doctor ON Appointments(DoctorID);
 
 -- Prescription History
--- FIX: Cannot FK to 'Appointments' because 'Appointments' is partitioned.
 CREATE TABLE PrescriptionHistory (
     HistoryID INT AUTO_INCREMENT PRIMARY KEY,
     AppointmentID INT NOT NULL,

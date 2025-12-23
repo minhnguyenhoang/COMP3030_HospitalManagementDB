@@ -1,16 +1,18 @@
 import React from 'react';
-import { InventoryItem } from '../types';
+import { InventoryItem, UserRole } from '../types';
 import { AlertTriangle, ArrowDown, ArrowUp, Pencil, Trash2 } from 'lucide-react';
 import { showSuccess, showError, showWarning } from '../src/utils/toast';
 
-const Inventory: React.FC = () => {
+const Inventory: React.FC<{ role?: UserRole }> = ({ role }) => {
   const [items, setItems] = React.useState<any[]>([]);
+  const [stockHistory, setStockHistory] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(false);
+  const [activeTab, setActiveTab] = React.useState<'inventory' | 'history'>('inventory');
   const [showRestock, setShowRestock] = React.useState(false);
   const [showAddMedicine, setShowAddMedicine] = React.useState(false);
   const [showEditMedicine, setShowEditMedicine] = React.useState(false);
   const [editingMedicine, setEditingMedicine] = React.useState<any>(null);
-  const [restockForm, setRestockForm] = React.useState({ medicine_id: '', amount: 0 });
+  const [restockForm, setRestockForm] = React.useState({ medicine_id: '', amount: 0, note: '', add_remove: true });
   const [medicineForm, setMedicineForm] = React.useState({ medicine_name: '', producer: '', medicine_unit: '', medicine_type: '', medicine_administration_method: '', price: '' });
   const [medicineTypes, setMedicineTypes] = React.useState<any[]>([]);
   const [medicineAdminMethods, setMedicineAdminMethods] = React.useState<any[]>([]);
@@ -31,6 +33,12 @@ const Inventory: React.FC = () => {
         const types = typesResp.results || typesResp;
         const adminMethods = adminResp.results || adminResp;
 
+        // Create medicine name map
+        const medNameMap: Record<number, string> = {};
+        meds.forEach((m: any) => {
+          medNameMap[m.id] = m.medicine_name;
+        });
+
         // Aggregate stock per medicine id
         const stockMap: Record<number, number> = {};
         stock.forEach((s: any) => {
@@ -38,6 +46,17 @@ const Inventory: React.FC = () => {
           const delta = s.add_remove ? s.amount : -s.amount;
           stockMap[id] = (stockMap[id] || 0) + delta;
         });
+
+        // Enrich stock history with medicine names
+        const enrichedHistory = stock.map((s: any) => ({
+          ...s,
+          medicine_name: medNameMap[s.medicine] || 'Unknown',
+          transaction_type: s.note === 'Prescription deduction' || s.note === 'Prescription'
+            ? 'Prescription'
+            : s.add_remove
+              ? 'Add Stock'
+              : 'Remove Stock'
+        }));
 
         const normalized = meds.map((m: any) => ({
           id: m.id,
@@ -50,6 +69,7 @@ const Inventory: React.FC = () => {
         }));
         if (!mounted) return;
         setItems(normalized);
+        setStockHistory(enrichedHistory);
         setMedicineTypes(types);
         setMedicineAdminMethods(adminMethods);
         setLoading(false);
@@ -64,7 +84,7 @@ const Inventory: React.FC = () => {
   const handleOpenRestock = () => setShowRestock(true);
   const handleCloseRestock = () => {
     setShowRestock(false);
-    setRestockForm({ medicine_id: '', amount: 0 });
+    setRestockForm({ medicine_id: '', amount: 0, note: '', add_remove: true });
   };
 
   const handleOpenAddMedicine = () => setShowAddMedicine(true);
@@ -265,17 +285,41 @@ const Inventory: React.FC = () => {
     setLoading(true);
     try {
       const api = await import('../src/api');
-      await api.createMedicineStock({ medicine: restockForm.medicine_id, add_remove: true, amount: restockForm.amount });
+      await api.createMedicineStock({
+        medicine_id: restockForm.medicine_id,
+        add_remove: restockForm.add_remove,
+        amount: restockForm.amount,
+        note: restockForm.note || (restockForm.add_remove ? 'Stock added' : 'Stock removed')
+      });
       // refresh
       const [medsResp, stockResp] = await Promise.all([api.fetchMedicines(), api.fetchMedicineStock()]);
       const meds = medsResp.results || medsResp;
       const stock = stockResp.results || stockResp;
+
+      // Create medicine name map
+      const medNameMap: Record<number, string> = {};
+      meds.forEach((m: any) => {
+        medNameMap[m.id] = m.medicine_name;
+      });
+
       const stockMap: Record<number, number> = {};
       stock.forEach((s: any) => {
         const id = s.medicine;
         const delta = s.add_remove ? s.amount : -s.amount;
         stockMap[id] = (stockMap[id] || 0) + delta;
       });
+
+      // Enrich stock history with medicine names
+      const enrichedHistory = stock.map((s: any) => ({
+        ...s,
+        medicine_name: medNameMap[s.medicine] || 'Unknown',
+        transaction_type: s.note === 'Prescription deduction' || s.note === 'Prescription'
+          ? 'Prescription'
+          : s.add_remove
+            ? 'Add Stock'
+            : 'Remove Stock'
+      }));
+
       const normalized = meds.map((m: any) => ({
         id: m.id,
         name: m.medicine_name,
@@ -286,207 +330,520 @@ const Inventory: React.FC = () => {
         lastUpdated: '—',
       }));
       setItems(normalized);
-      setRestockForm({ medicine_id: '', amount: 0 });
+      setStockHistory(enrichedHistory);
       handleCloseRestock();
-      showSuccess('Medicine restocked successfully');
+      showSuccess(restockForm.add_remove ? 'Stock added successfully' : 'Stock removed successfully');
     } catch (err:any) {
-      showError('Restock failed: ' + err.message);
+      showError('Operation failed: ' + err.message);
     } finally {
       setLoading(false);
     }
   }
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-800">Pharmacy & Inventory</h2>
-          <p className="text-slate-500 text-sm">Track medication stock and supplies</p>
-        </div>
-        <div className="flex gap-3">
-          <button onClick={handleExportCSV} className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50">
-            <ArrowDown className="w-4 h-4" /> Export Report
+      {/* Page Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-slate-800">Pharmacy & Inventory</h1>
+        <p className="text-slate-500 mt-1">Track medication stock and supplies</p>
+      </div>
+
+      {/* Tabs Navigation */}
+      <div className="border-b border-slate-200">
+        <div className="flex gap-8">
+          <button
+            onClick={() => setActiveTab('inventory')}
+            className={`pb-4 px-1 text-sm font-medium transition-colors relative ${
+              activeTab === 'inventory'
+                ? 'text-blue-600'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            Inventory
+            {activeTab === 'inventory' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
+            )}
           </button>
-          <button onClick={handleOpenAddMedicine} className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 shadow-sm">
-            Add Medicine
-          </button>
-          <button onClick={handleOpenRestock} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">
-            <ArrowUp className="w-4 h-4" /> Restock Item
+
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`pb-4 px-1 text-sm font-medium transition-colors relative ${
+              activeTab === 'history'
+                ? 'text-blue-600'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            Stock History
+            {activeTab === 'history' && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
+            )}
           </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-left">
-          <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-semibold">
-            <tr>
-              <th className="px-6 py-4">Item Name</th>
-              <th className="px-6 py-4">Category</th>
-              <th className="px-6 py-4">Current Stock</th>
-              <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4">Last Updated</th>
-              <th className="px-6 py-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {items.map((item: any) => {
-              const isLow = item.stock < (item.minLevel || 10);
-              return (
-                <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="font-medium text-slate-800">{item.name}</div>
-                    <div className="text-xs text-slate-400 font-mono">{item.id}</div>
-                  </td>
-                  <td className="px-6 py-4 text-slate-600">{item.category}</td>
-                  <td className="px-6 py-4">
-                    <span className="font-bold text-slate-800">{item.stock}</span> 
-                    <span className="text-slate-500 text-xs ml-1">{item.unit}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    {isLow ? (
-                      <span className="flex items-center gap-1 text-red-600 text-xs font-bold bg-red-50 px-2 py-1 rounded-full w-fit">
-                        <AlertTriangle className="w-3 h-3" /> Low Stock
-                      </span>
-                    ) : (
-                      <span className="text-green-600 text-xs font-bold bg-green-50 px-2 py-1 rounded-full w-fit">
-                        In Stock
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-slate-500 text-sm">{item.lastUpdated}</td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleOpenEdit(item.id)}
-                        className="text-green-600 hover:bg-green-50 p-2 rounded-lg transition-colors"
-                        title="Edit Medicine"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"
-                        title="Delete Medicine"
-                        disabled={loading}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      {showRestock && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <form onSubmit={handleRestock} className="bg-white p-6 rounded-xl w-full max-w-md">
-            <h3 className="text-lg font-bold mb-4">Restock Item</h3>
-            <select value={restockForm.medicine_id} onChange={(e)=>setRestockForm({...restockForm, medicine_id: e.target.value})} className="w-full p-2 border rounded mb-3" required>
-              <option value="">Select medicine *</option>
-              {items.map((m:any)=> <option key={m.id} value={m.id}>{m.name} (Current: {m.stock})</option>)}
-            </select>
-            <input type="number" min={1} value={restockForm.amount || ''} onChange={(e)=>setRestockForm({...restockForm, amount: parseInt(e.target.value||'0', 10)})} className="w-full p-2 border rounded mb-3" placeholder="Amount *" required />
-            <div className="flex justify-end gap-2 mt-4">
-              <button type="button" onClick={handleCloseRestock} className="px-4 py-2 rounded border" disabled={loading}>Cancel</button>
-              <button type="submit" disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50">{loading ? 'Restocking...' : 'Restock'}</button>
+      {/* Tab Content */}
+      {activeTab === 'inventory' && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center gap-3">
+            <div>
+              {role !== UserRole.ADMIN && (
+                <p className="text-xs text-slate-500 italic">
+                  View-only mode. Only administrators can manage inventory.
+                </p>
+              )}
             </div>
-          </form>
-        </div>
-      )}
-
-      {showAddMedicine && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <form onSubmit={handleCreateMedicine} className="bg-white p-6 rounded-xl w-full max-w-md">
-            <h3 className="text-lg font-bold mb-4">Add New Medicine</h3>
-            <div className="grid grid-cols-1 gap-3">
-              <input value={medicineForm.medicine_name} onChange={(e)=>setMedicineForm({...medicineForm, medicine_name: e.target.value})} placeholder="Medicine Name *" className="p-2 border rounded" required />
-              <input value={medicineForm.producer} onChange={(e)=>setMedicineForm({...medicineForm, producer: e.target.value})} placeholder="Producer / Manufacturer" className="p-2 border rounded" />
-              <input value={medicineForm.medicine_unit} onChange={(e)=>setMedicineForm({...medicineForm, medicine_unit: e.target.value})} placeholder="Unit (e.g., tablets, ml, mg) *" className="p-2 border rounded" required />
-              <select value={medicineForm.medicine_type} onChange={(e)=>setMedicineForm({...medicineForm, medicine_type: e.target.value})} className="p-2 border rounded" required>
-                <option value="">Select Medicine Type *</option>
-                {medicineTypes.map((t:any)=> <option key={t.id} value={t.id}>{t.name}</option>)}
-              </select>
-              <select value={medicineForm.medicine_administration_method} onChange={(e)=>setMedicineForm({...medicineForm, medicine_administration_method: e.target.value})} className="p-2 border rounded" required>
-                <option value="">Select Administration Method *</option>
-                {medicineAdminMethods.map((m:any)=> <option key={m.id} value={m.id}>{m.name}</option>)}
-              </select>
-
-              <div className="flex justify-end gap-2 mt-4">
-                <button type="button" onClick={handleCloseAddMedicine} className="px-4 py-2 rounded border" disabled={loading}>Cancel</button>
-                <button type="submit" disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50">{loading ? 'Creating...' : 'Create'}</button>
-              </div>
+            <div className="flex gap-3">
+              <button onClick={handleExportCSV} className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50">
+                <ArrowDown className="w-4 h-4" /> Export Report
+              </button>
+              {role === UserRole.ADMIN && (
+                <button onClick={handleOpenAddMedicine} className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700 shadow-sm">
+                  Add Medicine
+                </button>
+              )}
             </div>
-          </form>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-auto">
+          <table className="w-full text-left">
+            <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-semibold sticky top-0">
+              <tr>
+                <th className="px-6 py-4">Item Name</th>
+                <th className="px-6 py-4">Category</th>
+                <th className="px-6 py-4">Current Stock</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Last Updated</th>
+                <th className="px-6 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {items.map((item: any) => {
+                const isLow = item.stock < (item.minLevel || 10);
+                return (
+                  <tr key={item.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-slate-800">{item.name}</div>
+                      <div className="text-xs text-slate-400 font-mono">{item.id}</div>
+                    </td>
+                    <td className="px-6 py-4 text-slate-600">{item.category}</td>
+                    <td className="px-6 py-4">
+                      <span className="font-bold text-slate-800">{item.stock}</span> 
+                      <span className="text-slate-500 text-xs ml-1">{item.unit}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      {isLow ? (
+                        <span className="flex items-center gap-1 text-red-600 text-xs font-bold bg-red-50 px-2 py-1 rounded-full w-fit">
+                          <AlertTriangle className="w-3 h-3" /> Low Stock
+                        </span>
+                      ) : (
+                        <span className="text-green-600 text-xs font-bold bg-green-50 px-2 py-1 rounded-full w-fit">
+                          In Stock
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-slate-500 text-sm">{item.lastUpdated}</td>
+                    <td className="px-6 py-4 text-right">
+                      {role === UserRole.ADMIN ? (
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleOpenEdit(item.id)}
+                            className="text-green-600 hover:bg-green-50 p-2 rounded-lg transition-colors"
+                            title="Edit Medicine"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item.id)}
+                            className="text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                            title="Delete Medicine"
+                            disabled={loading}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-slate-400">View only</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-      )}
 
-      {/* Edit Medicine Modal */}
-      {showEditMedicine && editingMedicine && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <form onSubmit={handleUpdate} className="bg-white p-6 rounded-xl w-full max-w-md">
-            <h3 className="text-lg font-bold mb-4">Edit Medicine</h3>
-            <div className="grid grid-cols-1 gap-3">
-              <input
-                value={medicineForm.medicine_name}
-                onChange={(e)=>setMedicineForm({...medicineForm, medicine_name: e.target.value})}
-                placeholder="Medicine Name *"
-                className="p-2 border rounded"
-                required
-              />
-              <input
-                value={medicineForm.producer}
-                onChange={(e)=>setMedicineForm({...medicineForm, producer: e.target.value})}
-                placeholder="Producer / Manufacturer"
-                className="p-2 border rounded"
-              />
-              <input
-                value={medicineForm.medicine_unit}
-                onChange={(e)=>setMedicineForm({...medicineForm, medicine_unit: e.target.value})}
-                placeholder="Unit (e.g., tablets, ml, mg) *"
-                className="p-2 border rounded"
-                required
-              />
-              <input
-                type="number"
-                step="0.01"
-                value={medicineForm.price}
-                onChange={(e)=>setMedicineForm({...medicineForm, price: e.target.value})}
-                placeholder="Price"
-                className="p-2 border rounded"
-              />
-              <select
-                value={medicineForm.medicine_type}
-                onChange={(e)=>setMedicineForm({...medicineForm, medicine_type: e.target.value})}
-                className="p-2 border rounded"
-                required
-              >
-                <option value="">Select Medicine Type *</option>
-                {medicineTypes.map((t:any)=> <option key={t.id} value={t.id}>{t.name}</option>)}
-              </select>
-              <select
-                value={medicineForm.medicine_administration_method}
-                onChange={(e)=>setMedicineForm({...medicineForm, medicine_administration_method: e.target.value})}
-                className="p-2 border rounded"
-                required
-              >
-                <option value="">Select Administration Method *</option>
-                {medicineAdminMethods.map((m:any)=> <option key={m.id} value={m.id}>{m.name}</option>)}
-              </select>
+        {showRestock && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <form onSubmit={handleRestock} className="bg-white p-6 rounded-xl w-full max-w-md">
+              <h3 className="text-lg font-bold mb-4">Add Entry</h3>
 
-              <div className="flex justify-end gap-2 mt-4">
-                <button type="button" onClick={handleCloseEdit} className="px-4 py-2 rounded border">Cancel</button>
-                <button type="submit" disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50">
-                  {loading ? 'Updating...' : 'Update'}
+              {/* +/- Buttons */}
+              <div className="flex gap-2 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setRestockForm({...restockForm, add_remove: true})}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 font-medium transition-all ${
+                    restockForm.add_remove
+                      ? 'bg-green-50 border-green-500 text-green-700'
+                      : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                  }`}
+                >
+                  <ArrowUp className="w-5 h-5" />
+                  Add Stock
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRestockForm({...restockForm, add_remove: false})}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 font-medium transition-all ${
+                    !restockForm.add_remove
+                      ? 'bg-red-50 border-red-500 text-red-700'
+                      : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                  }`}
+                >
+                  <ArrowDown className="w-5 h-5" />
+                  Remove Stock
                 </button>
               </div>
+
+              <select value={restockForm.medicine_id} onChange={(e)=>setRestockForm({...restockForm, medicine_id: e.target.value})} className="w-full p-2 border rounded mb-3" required>
+                <option value="">Select medicine *</option>
+                {items.map((m:any)=> <option key={m.id} value={m.id}>{m.name} (Current: {m.stock})</option>)}
+              </select>
+
+              <input type="number" min={1} value={restockForm.amount || ''} onChange={(e)=>setRestockForm({...restockForm, amount: parseInt(e.target.value||'0', 10)})} className="w-full p-2 border rounded mb-3" placeholder="Amount *" required />
+
+              <input type="text" value={restockForm.note} onChange={(e)=>setRestockForm({...restockForm, note: e.target.value})} className="w-full p-2 border rounded mb-3" placeholder="Note (optional)" />
+
+              <div className="flex justify-end gap-2 mt-4">
+                <button type="button" onClick={handleCloseRestock} className="px-4 py-2 rounded border" disabled={loading}>Cancel</button>
+                <button type="submit" disabled={loading} className={`px-4 py-2 rounded text-white disabled:opacity-50 ${restockForm.add_remove ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}>
+                  {loading ? 'Processing...' : (restockForm.add_remove ? 'Add Stock' : 'Remove Stock')}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {showAddMedicine && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <form onSubmit={handleCreateMedicine} className="bg-white p-6 rounded-xl w-full max-w-md">
+              <h3 className="text-lg font-bold mb-4">Add New Medicine</h3>
+              <div className="grid grid-cols-1 gap-3">
+                <input value={medicineForm.medicine_name} onChange={(e)=>setMedicineForm({...medicineForm, medicine_name: e.target.value})} placeholder="Medicine Name *" className="p-2 border rounded" required />
+                <input value={medicineForm.producer} onChange={(e)=>setMedicineForm({...medicineForm, producer: e.target.value})} placeholder="Producer / Manufacturer" className="p-2 border rounded" />
+                <input value={medicineForm.medicine_unit} onChange={(e)=>setMedicineForm({...medicineForm, medicine_unit: e.target.value})} placeholder="Unit (e.g., tablets, ml, mg) *" className="p-2 border rounded" required />
+                <select value={medicineForm.medicine_type} onChange={(e)=>setMedicineForm({...medicineForm, medicine_type: e.target.value})} className="p-2 border rounded" required>
+                  <option value="">Select Medicine Type *</option>
+                  {medicineTypes.map((t:any)=> <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+                <select value={medicineForm.medicine_administration_method} onChange={(e)=>setMedicineForm({...medicineForm, medicine_administration_method: e.target.value})} className="p-2 border rounded" required>
+                  <option value="">Select Administration Method *</option>
+                  {medicineAdminMethods.map((m:any)=> <option key={m.id} value={m.id}>{m.name}</option>)}
+                </select>
+
+                <div className="flex justify-end gap-2 mt-4">
+                  <button type="button" onClick={handleCloseAddMedicine} className="px-4 py-2 rounded border" disabled={loading}>Cancel</button>
+                  <button type="submit" disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50">{loading ? 'Creating...' : 'Create'}</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Edit Medicine Modal */}
+        {showEditMedicine && editingMedicine && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+            <form onSubmit={handleUpdate} className="bg-white p-6 rounded-xl w-full max-w-md">
+              <h3 className="text-lg font-bold mb-4">Edit Medicine</h3>
+              <div className="grid grid-cols-1 gap-3">
+                <input
+                  value={medicineForm.medicine_name}
+                  onChange={(e)=>setMedicineForm({...medicineForm, medicine_name: e.target.value})}
+                  placeholder="Medicine Name *"
+                  className="p-2 border rounded"
+                  required
+                />
+                <input
+                  value={medicineForm.producer}
+                  onChange={(e)=>setMedicineForm({...medicineForm, producer: e.target.value})}
+                  placeholder="Producer / Manufacturer"
+                  className="p-2 border rounded"
+                />
+                <input
+                  value={medicineForm.medicine_unit}
+                  onChange={(e)=>setMedicineForm({...medicineForm, medicine_unit: e.target.value})}
+                  placeholder="Unit (e.g., tablets, ml, mg) *"
+                  className="p-2 border rounded"
+                  required
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={medicineForm.price}
+                  onChange={(e)=>setMedicineForm({...medicineForm, price: e.target.value})}
+                  placeholder="Price"
+                  className="p-2 border rounded"
+                />
+                <select
+                  value={medicineForm.medicine_type}
+                  onChange={(e)=>setMedicineForm({...medicineForm, medicine_type: e.target.value})}
+                  className="p-2 border rounded"
+                  required
+                >
+                  <option value="">Select Medicine Type *</option>
+                  {medicineTypes.map((t:any)=> <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+                <select
+                  value={medicineForm.medicine_administration_method}
+                  onChange={(e)=>setMedicineForm({...medicineForm, medicine_administration_method: e.target.value})}
+                  className="p-2 border rounded"
+                  required
+                >
+                  <option value="">Select Administration Method *</option>
+                  {medicineAdminMethods.map((m:any)=> <option key={m.id} value={m.id}>{m.name}</option>)}
+                </select>
+
+                <div className="flex justify-end gap-2 mt-4">
+                  <button type="button" onClick={handleCloseEdit} className="px-4 py-2 rounded border">Cancel</button>
+                  <button type="submit" disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50">
+                    {loading ? 'Updating...' : 'Update'}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        )}
+      </div>
+      )}
+
+      {/* History Tab Content */}
+      {activeTab === 'history' && (
+        <div className="space-y-6">
+          <div className="flex justify-between items-center gap-3">
+            <div>
+              {role !== UserRole.ADMIN && (
+                <p className="text-xs text-slate-500 italic">
+                  View-only mode. Only administrators can add/remove stock.
+                </p>
+              )}
             </div>
-          </form>
+            <div className="flex gap-3">
+              <button onClick={handleExportCSV} className="flex items-center gap-2 bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50">
+                <ArrowDown className="w-4 h-4" /> Export Report
+              </button>
+              {role === UserRole.ADMIN && (
+                <button onClick={handleOpenRestock} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 shadow-sm">
+                  <ArrowUp className="w-4 h-4" /> Add Entry
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-auto">
+          <table className="w-full text-left">
+            <thead className="bg-slate-50 text-slate-500 text-xs uppercase font-semibold sticky top-0">
+              <tr>
+                <th className="px-6 py-4">ID</th>
+                <th className="px-6 py-4">Medicine</th>
+                <th className="px-6 py-4">Type</th>
+                <th className="px-6 py-4">Amount</th>
+                <th className="px-6 py-4">Note</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {stockHistory.slice(0, 50).map((entry: any, idx: number) => {
+                const isAdd = entry.add_remove;
+                const isPrescription = entry.transaction_type === 'Prescription';
+                return (
+                  <tr key={entry.id || idx} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 text-slate-600 text-sm font-mono">
+                      {entry.id ? `#${entry.id}` : '—'}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-slate-800">{entry.medicine_name}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      {isPrescription ? (
+                        <span className="text-purple-600 text-xs font-bold bg-purple-50 px-2 py-1 rounded-full w-fit inline-flex items-center gap-1">
+                          Prescription
+                        </span>
+                      ) : isAdd ? (
+                        <span className="text-green-600 text-xs font-bold bg-green-50 px-2 py-1 rounded-full w-fit inline-flex items-center gap-1">
+                          <ArrowUp className="w-3 h-3" /> Add
+                        </span>
+                      ) : (
+                        <span className="text-red-600 text-xs font-bold bg-red-50 px-2 py-1 rounded-full w-fit inline-flex items-center gap-1">
+                          <ArrowDown className="w-3 h-3" /> Remove
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`font-bold ${isAdd ? 'text-green-600' : 'text-red-600'}`}>
+                        {isAdd ? '+' : '-'}{entry.amount}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-slate-500 text-sm">
+                      {entry.note || '—'}
+                    </td>
+                  </tr>
+                );
+              })}
+              {stockHistory.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-slate-400">
+                    No stock history available
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
         </div>
       )}
+
+      {/* Modals - Shared between tabs */}
+      {showRestock && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <form onSubmit={handleRestock} className="bg-white p-6 rounded-xl w-full max-w-md">
+              <h3 className="text-lg font-bold mb-4">Add Entry</h3>
+
+              {/* +/- Buttons */}
+              <div className="flex gap-2 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setRestockForm({...restockForm, add_remove: true})}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 font-medium transition-all ${
+                    restockForm.add_remove
+                      ? 'bg-green-50 border-green-500 text-green-700'
+                      : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                  }`}
+                >
+                  <ArrowUp className="w-5 h-5" />
+                  Add Stock
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setRestockForm({...restockForm, add_remove: false})}
+                  className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 font-medium transition-all ${
+                    !restockForm.add_remove
+                      ? 'bg-red-50 border-red-500 text-red-700'
+                      : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                  }`}
+                >
+                  <ArrowDown className="w-5 h-5" />
+                  Remove Stock
+                </button>
+              </div>
+
+              <select value={restockForm.medicine_id} onChange={(e)=>setRestockForm({...restockForm, medicine_id: e.target.value})} className="w-full p-2 border rounded mb-3" required>
+                <option value="">Select medicine *</option>
+                {items.map((m:any)=> <option key={m.id} value={m.id}>{m.name} (Current: {m.stock})</option>)}
+              </select>
+
+              <input type="number" min={1} value={restockForm.amount || ''} onChange={(e)=>setRestockForm({...restockForm, amount: parseInt(e.target.value||'0', 10)})} className="w-full p-2 border rounded mb-3" placeholder="Amount *" required />
+
+              <input type="text" value={restockForm.note} onChange={(e)=>setRestockForm({...restockForm, note: e.target.value})} className="w-full p-2 border rounded mb-3" placeholder="Note (optional)" />
+
+              <div className="flex justify-end gap-2 mt-4">
+                <button type="button" onClick={handleCloseRestock} className="px-4 py-2 rounded border" disabled={loading}>Cancel</button>
+                <button type="submit" disabled={loading} className={`px-4 py-2 rounded text-white disabled:opacity-50 ${restockForm.add_remove ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}>
+                  {loading ? 'Processing...' : (restockForm.add_remove ? 'Add Stock' : 'Remove Stock')}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {showAddMedicine && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+            <form onSubmit={handleCreateMedicine} className="bg-white p-6 rounded-xl w-full max-w-md">
+              <h3 className="text-lg font-bold mb-4">Add New Medicine</h3>
+              <div className="grid grid-cols-1 gap-3">
+                <input value={medicineForm.medicine_name} onChange={(e)=>setMedicineForm({...medicineForm, medicine_name: e.target.value})} placeholder="Medicine Name *" className="p-2 border rounded" required />
+                <input value={medicineForm.producer} onChange={(e)=>setMedicineForm({...medicineForm, producer: e.target.value})} placeholder="Producer / Manufacturer" className="p-2 border rounded" />
+                <input value={medicineForm.medicine_unit} onChange={(e)=>setMedicineForm({...medicineForm, medicine_unit: e.target.value})} placeholder="Unit (e.g., tablets, ml, mg) *" className="p-2 border rounded" required />
+                <select value={medicineForm.medicine_type} onChange={(e)=>setMedicineForm({...medicineForm, medicine_type: e.target.value})} className="p-2 border rounded" required>
+                  <option value="">Select Medicine Type *</option>
+                  {medicineTypes.map((t:any)=> <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+                <select value={medicineForm.medicine_administration_method} onChange={(e)=>setMedicineForm({...medicineForm, medicine_administration_method: e.target.value})} className="p-2 border rounded" required>
+                  <option value="">Select Administration Method *</option>
+                  {medicineAdminMethods.map((m:any)=> <option key={m.id} value={m.id}>{m.name}</option>)}
+                </select>
+
+                <div className="flex justify-end gap-2 mt-4">
+                  <button type="button" onClick={handleCloseAddMedicine} className="px-4 py-2 rounded border" disabled={loading}>Cancel</button>
+                  <button type="submit" disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50">{loading ? 'Creating...' : 'Create'}</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Edit Medicine Modal */}
+        {showEditMedicine && editingMedicine && (
+          <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+            <form onSubmit={handleUpdate} className="bg-white p-6 rounded-xl w-full max-w-md">
+              <h3 className="text-lg font-bold mb-4">Edit Medicine</h3>
+              <div className="grid grid-cols-1 gap-3">
+                <input
+                  value={medicineForm.medicine_name}
+                  onChange={(e)=>setMedicineForm({...medicineForm, medicine_name: e.target.value})}
+                  placeholder="Medicine Name *"
+                  className="p-2 border rounded"
+                  required
+                />
+                <input
+                  value={medicineForm.producer}
+                  onChange={(e)=>setMedicineForm({...medicineForm, producer: e.target.value})}
+                  placeholder="Producer / Manufacturer"
+                  className="p-2 border rounded"
+                />
+                <input
+                  value={medicineForm.medicine_unit}
+                  onChange={(e)=>setMedicineForm({...medicineForm, medicine_unit: e.target.value})}
+                  placeholder="Unit (e.g., tablets, ml, mg) *"
+                  className="p-2 border rounded"
+                  required
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={medicineForm.price}
+                  onChange={(e)=>setMedicineForm({...medicineForm, price: e.target.value})}
+                  placeholder="Price"
+                  className="p-2 border rounded"
+                />
+                <select
+                  value={medicineForm.medicine_type}
+                  onChange={(e)=>setMedicineForm({...medicineForm, medicine_type: e.target.value})}
+                  className="p-2 border rounded"
+                  required
+                >
+                  <option value="">Select Medicine Type *</option>
+                  {medicineTypes.map((t:any)=> <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+                <select
+                  value={medicineForm.medicine_administration_method}
+                  onChange={(e)=>setMedicineForm({...medicineForm, medicine_administration_method: e.target.value})}
+                  className="p-2 border rounded"
+                  required
+                >
+                  <option value="">Select Administration Method *</option>
+                  {medicineAdminMethods.map((m:any)=> <option key={m.id} value={m.id}>{m.name}</option>)}
+                </select>
+
+                <div className="flex justify-end gap-2 mt-4">
+                  <button type="button" onClick={handleCloseEdit} className="px-4 py-2 rounded border">Cancel</button>
+                  <button type="submit" disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50">
+                    {loading ? 'Updating...' : 'Update'}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+        )}
     </div>
-  );
+    );
 };
 
 export default Inventory;
