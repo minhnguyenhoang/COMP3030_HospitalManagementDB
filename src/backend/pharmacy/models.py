@@ -1,14 +1,6 @@
 from django.db import models
 
 
-class TypeCoreMedInfo(models.Model):
-    name = models.CharField(max_length=50)
-
-    class Meta:
-        db_table = 'Type_CoreMedInfo'
-        ordering = ['id']
-        verbose_name = 'Core Medical Information'
-        verbose_name_plural = 'Core Medical Information'
 
 
 class TypeMedicineFunction(models.Model):

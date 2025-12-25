@@ -21,7 +21,7 @@ from django.http import JsonResponse
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from patients.views import PatientViewSet
+from patients.views import PatientViewSet, TypeCoreMedViewSet
 from doctors.views import DoctorViewSet, DepartmentViewSet, DoctorLevelViewSet, DoctorActiveStatusViewSet
 from appointments.views import AppointmentViewSet
 from pharmacy.views import (
@@ -44,7 +44,7 @@ router.register(r'medicines', MedicineViewSet)
 router.register(r'medicine-stock', MedicineStockHistoryViewSet)
 router.register(r'medicine-types', TypeMedicineFunctionViewSet)
 router.register(r'medicine-admin-methods', TypeMedicineAdministrationViewSet)
-
+router.register(r'type-coremedinfo', TypeCoreMedViewSet)
 
 def health(request):
     return JsonResponse({'status': 'ok', 'service': 'Hospital Management Backend'})

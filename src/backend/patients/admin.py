@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Patient, PatientPersonalInformation, PatientCoreMedicalInformation, PatientEmergencyContact
+from .models import Patient, PatientPersonalInformation, PatientCoreMedicalInformation, PatientEmergencyContact, TypeCoreMedInfo
 
 
 @admin.register(Patient)
@@ -11,3 +11,4 @@ class PatientAdmin(admin.ModelAdmin):
 admin.site.register(PatientPersonalInformation)
 admin.site.register(PatientCoreMedicalInformation)
 admin.site.register(PatientEmergencyContact)
+admin.site.register(TypeCoreMedInfo)

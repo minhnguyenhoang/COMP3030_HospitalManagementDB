@@ -1,8 +1,8 @@
 from rest_framework import viewsets, permissions, filters, status
 from rest_framework.response import Response
 from django.db.models.deletion import ProtectedError
-from .models import Patient, PatientCoreMedicalInformation
-from .serializers import PatientSerializer
+from .models import Patient, PatientCoreMedicalInformation, TypeCoreMedInfo
+from .serializers import PatientSerializer, TypeCoreMedInfoSerializer
 
 
 class PatientViewSet(viewsets.ModelViewSet):
@@ -56,3 +56,8 @@ class PatientViewSet(viewsets.ModelViewSet):
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+class TypeCoreMedViewSet(viewsets.ModelViewSet):
+    queryset = TypeCoreMedInfo.objects.all()
+    serializer_class = TypeCoreMedInfoSerializer
+    permission_classes = [permissions.IsAuthenticated]

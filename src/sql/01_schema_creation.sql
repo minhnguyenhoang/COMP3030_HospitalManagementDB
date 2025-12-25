@@ -10,7 +10,7 @@ USE HospitalDB;
 -- 1. LOOKUP TABLES
 -- ==========================================
 
--- Type_CoreMedInfo (pharmacy.TypeCoreMedInfo)
+-- Type_CoreMedInfo (patients.TypeCoreMedInfo)
 CREATE TABLE Type_CoreMedInfo (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(50) NOT NULL
@@ -123,10 +123,10 @@ CREATE TABLE PatientPersonalInformation (
 CREATE TABLE PatientCoreMedicalInformation (
     id INT AUTO_INCREMENT PRIMARY KEY,
     patient_id INT NOT NULL,
-    information_type INT NOT NULL,
+    information_type_id INT NOT NULL,
     note VARCHAR(255) NULL,
     FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE,
-    FOREIGN KEY (information_type) REFERENCES Type_CoreMedInfo(id)
+    FOREIGN KEY (information_type_id) REFERENCES Type_CoreMedInfo(id)
 ) ENGINE=InnoDB;
 
 -- PatientEmergencyContact (patients.PatientEmergencyContact)

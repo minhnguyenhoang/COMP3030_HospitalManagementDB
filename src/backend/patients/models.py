@@ -50,18 +50,7 @@ class PatientPersonalInformation(models.Model):
         verbose_name_plural = 'Patient Personal Information'
 
     def __str__(self):
-        return f"Personal Info {self.patient_id}"
-
-
-class PatientCoreMedicalInformation(models.Model):
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='core_med_info')
-    information_type = models.IntegerField()
-    note = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = 'PatientCoreMedicalInformation'
-        verbose_name = 'Patient Core Medical Information'
-        verbose_name_plural = 'Patient Core Medical Information'
+        return f"Personal Info {self.patient}"
 
 
 class PatientEmergencyContact(models.Model):
@@ -75,3 +64,25 @@ class PatientEmergencyContact(models.Model):
         db_table = 'PatientEmergencyContact'
         verbose_name = 'Patient Emergency Contact'
         verbose_name_plural = 'Patient Emergency Contacts'
+
+class TypeCoreMedInfo(models.Model):
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        db_table = 'Type_CoreMedInfo'
+        ordering = ['id']
+        verbose_name = 'Core Medical Information'
+        verbose_name_plural = 'Core Medical Information'
+        
+    def __str__(self) -> str:
+        return self.name
+    
+class PatientCoreMedicalInformation(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='core_med_info')
+    information_type = models.ForeignKey(TypeCoreMedInfo, on_delete=models.CASCADE)
+    note = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = 'PatientCoreMedicalInformation'
+        verbose_name = 'Patient Core Medical Information'
+        verbose_name_plural = 'Patient Core Medical Information'
