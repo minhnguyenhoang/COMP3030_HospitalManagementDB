@@ -2,6 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Sum, Case, When, IntegerField, F, Count
+from django.utils import timezone
 from datetime import date, datetime, timedelta
 
 from appointments.models import Appointment
@@ -15,19 +16,20 @@ class OverviewMetrics(APIView):
     def get(self, request):
         today = date.today()
 
+        # Create timezone-aware datetime objects
+        start_of_day = timezone.make_aware(datetime.combine(today, datetime.min.time()))
+        end_of_day = timezone.make_aware(datetime.combine(today, datetime.max.time()))
+
         total_patients_today = (
             Appointment.objects.filter(
-                visit_date__range=(
-                    datetime.combine(today, datetime.min.time()),
-                    datetime.combine(today, datetime.max.time())
-                )
+                visit_date__range=(start_of_day, end_of_day)
             )
             .values('patient')
             .distinct()
             .count()
         )
 
-        pending_appointments = Appointment.objects.filter(visit_date__gte=today).count()
+        pending_appointments = Appointment.objects.filter(visit_date__gte=timezone.now()).count()
 
         # Use status names instead of hardcoded IDs
         doctors_on_duty = Doctor.objects.filter(
@@ -58,9 +60,9 @@ class OverviewMetrics(APIView):
         weekly = []
         for i in range(6, -1, -1):
             d = today - timedelta(days=i)
-            # Use date range to match DATE part of DATETIME field
-            start_dt = datetime.combine(d, datetime.min.time())
-            end_dt = datetime.combine(d, datetime.max.time())
+            # Use timezone-aware datetime for date range
+            start_dt = timezone.make_aware(datetime.combine(d, datetime.min.time()))
+            end_dt = timezone.make_aware(datetime.combine(d, datetime.max.time()))
             cnt = (
                 Appointment.objects.filter(visit_date__range=(start_dt, end_dt))
                 .values('patient')

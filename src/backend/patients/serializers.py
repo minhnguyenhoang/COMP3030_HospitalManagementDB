@@ -52,12 +52,12 @@ class PatientSerializer(serializers.ModelSerializer):
         """Return list of allergy notes"""
         return [
             info.note for info in obj.core_med_info.all()
-            if info.information_type == 1 and info.note
+            if info.information_type_id == 1 and info.note
         ]
 
     def get_chronic_conditions(self, obj):
         """Return list of chronic condition notes"""
         return [
             info.note for info in obj.core_med_info.all()
-            if info.information_type == 3 and info.note
+            if info.information_type_id == 3 and info.note
         ]
