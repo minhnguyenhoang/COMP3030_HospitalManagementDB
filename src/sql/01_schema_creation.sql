@@ -125,7 +125,8 @@ CREATE TABLE PatientCoreMedicalInformation (
     patient_id INT NOT NULL,
     information_type INT NOT NULL,
     note VARCHAR(255) NULL,
-    FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE
+    FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE,
+    FOREIGN KEY (information_type) REFERENCES Type_CoreMedInfo(id)
 ) ENGINE=InnoDB;
 
 -- PatientEmergencyContact (patients.PatientEmergencyContact)
