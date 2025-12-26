@@ -23,7 +23,15 @@ const Patients: React.FC<{ role?: UserRole }> = ({ role }) => {
     email: '',
     blood_type: '',
     allergies: '',
-    chronic_conditions: ''
+    chronic_conditions: '',
+    // Personal Information fields
+    nat_id: '',
+    passport_no: '',
+    drivers_license_no: '',
+    address: '',
+    city: '',
+    state: '',
+    country: ''
   });
 
   React.useEffect(() => {
@@ -70,7 +78,14 @@ const Patients: React.FC<{ role?: UserRole }> = ({ role }) => {
       email: '',
       blood_type: '',
       allergies: '',
-      chronic_conditions: ''
+      chronic_conditions: '',
+      nat_id: '',
+      passport_no: '',
+      drivers_license_no: '',
+      address: '',
+      city: '',
+      state: '',
+      country: ''
     });
   };
 
@@ -124,8 +139,16 @@ const Patients: React.FC<{ role?: UserRole }> = ({ role }) => {
           phone: fullData.phone || '',
           email: fullData.email || '',
           blood_type: fullData.blood_type || '',
-          allergies: fullData.allergies || '',
-          chronic_conditions: fullData.chronic_conditions || ''
+          // Convert array to comma-separated string
+          allergies: Array.isArray(fullData.allergies) ? fullData.allergies.join(', ') : (fullData.allergies || ''),
+          chronic_conditions: Array.isArray(fullData.chronic_conditions) ? fullData.chronic_conditions.join(', ') : (fullData.chronic_conditions || ''),
+          nat_id: fullData.personal_info?.nat_id || '',
+          passport_no: fullData.personal_info?.passport_no || '',
+          drivers_license_no: fullData.personal_info?.drivers_license_no || '',
+          address: fullData.personal_info?.address || '',
+          city: fullData.personal_info?.city || '',
+          state: fullData.personal_info?.state || '',
+          country: fullData.personal_info?.country || ''
         });
         setShowEdit(true);
       } catch (err: any) {
@@ -147,7 +170,14 @@ const Patients: React.FC<{ role?: UserRole }> = ({ role }) => {
       email: '',
       blood_type: '',
       allergies: '',
-      chronic_conditions: ''
+      chronic_conditions: '',
+      nat_id: '',
+      passport_no: '',
+      drivers_license_no: '',
+      address: '',
+      city: '',
+      state: '',
+      country: ''
     });
   };
 
@@ -339,6 +369,60 @@ const Patients: React.FC<{ role?: UserRole }> = ({ role }) => {
               </div>
             </div>
 
+            {/* Personal/Travel Documents - Admin Only */}
+            {role === UserRole.ADMIN && (
+              <div className="mb-4">
+                <h4 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                  Personal Information (Admin Only)
+                  <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Sensitive</span>
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    value={form.nat_id}
+                    onChange={(e)=>setForm({...form, nat_id: e.target.value})}
+                    placeholder="National ID"
+                    className="p-2 border rounded"
+                  />
+                  <input
+                    value={form.passport_no}
+                    onChange={(e)=>setForm({...form, passport_no: e.target.value})}
+                    placeholder="Passport Number"
+                    className="p-2 border rounded"
+                  />
+                  <input
+                    value={form.drivers_license_no}
+                    onChange={(e)=>setForm({...form, drivers_license_no: e.target.value})}
+                    placeholder="Driver's License"
+                    className="p-2 border rounded col-span-2"
+                  />
+                  <input
+                    value={form.address}
+                    onChange={(e)=>setForm({...form, address: e.target.value})}
+                    placeholder="Address"
+                    className="p-2 border rounded col-span-2"
+                  />
+                  <input
+                    value={form.city}
+                    onChange={(e)=>setForm({...form, city: e.target.value})}
+                    placeholder="City"
+                    className="p-2 border rounded"
+                  />
+                  <input
+                    value={form.state}
+                    onChange={(e)=>setForm({...form, state: e.target.value})}
+                    placeholder="State/Province"
+                    className="p-2 border rounded"
+                  />
+                  <input
+                    value={form.country}
+                    onChange={(e)=>setForm({...form, country: e.target.value})}
+                    placeholder="Country"
+                    className="p-2 border rounded col-span-2"
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-end gap-2 mt-4">
               <button type="button" onClick={handleCloseAdd} className="px-4 py-2 rounded border">Cancel</button>
               <button type="submit" disabled={loading} className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50">{loading ? 'Creating...' : 'Create Patient'}</button>
@@ -456,6 +540,60 @@ const Patients: React.FC<{ role?: UserRole }> = ({ role }) => {
                 />
               </div>
             </div>
+
+            {/* Personal/Travel Documents - Admin Only */}
+            {role === UserRole.ADMIN && (
+              <div className="mb-4">
+                <h4 className="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                  Personal Information (Admin Only)
+                  <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Sensitive</span>
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    value={form.nat_id}
+                    onChange={(e)=>setForm({...form, nat_id: e.target.value})}
+                    placeholder="National ID"
+                    className="p-2 border rounded"
+                  />
+                  <input
+                    value={form.passport_no}
+                    onChange={(e)=>setForm({...form, passport_no: e.target.value})}
+                    placeholder="Passport Number"
+                    className="p-2 border rounded"
+                  />
+                  <input
+                    value={form.drivers_license_no}
+                    onChange={(e)=>setForm({...form, drivers_license_no: e.target.value})}
+                    placeholder="Driver's License"
+                    className="p-2 border rounded col-span-2"
+                  />
+                  <input
+                    value={form.address}
+                    onChange={(e)=>setForm({...form, address: e.target.value})}
+                    placeholder="Address"
+                    className="p-2 border rounded col-span-2"
+                  />
+                  <input
+                    value={form.city}
+                    onChange={(e)=>setForm({...form, city: e.target.value})}
+                    placeholder="City"
+                    className="p-2 border rounded"
+                  />
+                  <input
+                    value={form.state}
+                    onChange={(e)=>setForm({...form, state: e.target.value})}
+                    placeholder="State/Province"
+                    className="p-2 border rounded"
+                  />
+                  <input
+                    value={form.country}
+                    onChange={(e)=>setForm({...form, country: e.target.value})}
+                    placeholder="Country"
+                    className="p-2 border rounded col-span-2"
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="flex justify-end gap-2 mt-4">
               <button type="button" onClick={handleCloseEdit} className="px-4 py-2 rounded border">Cancel</button>

@@ -151,7 +151,15 @@ const Appointments: React.FC<AppointmentsProps> = ({ role }) => {
         if (!patientForm.first_name || !patientForm.last_name || !patientForm.dob) {
           return showError('Please fill in patient name and date of birth');
         }
-        const newPatient = await api.createPatient(patientForm);
+        if (!appointmentDate) {
+          return showError('Please select appointment date and time');
+        }
+        const payload = {
+          ...patientForm,
+          first_visit_date: appointmentDate.split('T')[0],
+          last_visit_date: appointmentDate.split('T')[0]
+        };
+        const newPatient = await api.createPatient(payload);
         patientId = newPatient.id;
         showSuccess('New patient created successfully');
       }
